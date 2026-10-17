@@ -136,9 +136,11 @@ a.link:hover .arrow{transform:translateX(4px);opacity:1}
 footer{text-align:center;color:var(--muted);font-size:.9rem;margin-top:34px}
 
 /* fade-in */
-.reveal{opacity:0;transform:translateY(18px);animation:in .8s cubic-bezier(.2,.8,.2,1) forwards}
-@keyframes in{to{opacity:1;transform:none}}
-.reveal:nth-child(2){animation-delay:.08s}.reveal:nth-child(3){animation-delay:.16s}.reveal:nth-child(4){animation-delay:.24s}.reveal:nth-child(5){animation-delay:.32s}
+.reveal:not(.vis){opacity:0;transform:translateY(28px)}
+.reveal:not(.vis) .item,.reveal:not(.vis) .chip{opacity:0}
+.reveal.vis .item{animation:itemIn .9s calc(var(--i,0)*80ms + 250ms) cubic-bezier(.16,.84,.3,1) backwards}
+.reveal.vis .chip{animation:itemIn .9s calc(var(--i,0)*80ms + 600ms) cubic-bezier(.16,.84,.3,1) backwards,bob 5s ease-in-out infinite}
+@keyframes itemIn{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
 
 
 /* ---- extra beauty ---- */
@@ -153,8 +155,6 @@ h1{background:linear-gradient(100deg,#fff 20%,#ffd1f7 40%,#c9a7ff 55%,#fff 75%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
   animation:shine 9s ease-in-out infinite;text-shadow:none}
 @keyframes shine{50%{background-position:100% 0}}
-.sub::after{content:"";display:inline-block;width:2px;height:1.1em;margin-left:4px;vertical-align:-.15em;background:var(--pink-soft);animation:blink 1s steps(1) infinite}
-@keyframes blink{50%{opacity:0}}
 .sparks{position:fixed;inset:0;z-index:-1;pointer-events:none}
 .sparks i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px rgba(255,184,242,.8);opacity:0;animation:tw var(--d) ease-in-out var(--dl) infinite}
 @keyframes tw{0%,100%{opacity:0;transform:translateY(0) scale(.6)}50%{opacity:.9;transform:translateY(-18px) scale(1.2)}}
@@ -228,13 +228,9 @@ a.link:hover .em.dc{background:linear-gradient(145deg,rgba(120,110,255,.45),rgba
 .paused *,.paused *::before,.paused *::after{animation-play-state:paused!important}
 
 /* ---- text reveal ---- */
-.w{display:inline-block;animation:wIn 1.1s cubic-bezier(.16,.84,.3,1) backwards;animation-play-state:paused}
-.vis>.w,.vis .w,.vis.w{animation-play-state:running}
-.brand .w{animation-play-state:running}
-@keyframes wIn{from{opacity:0;filter:blur(12px);transform:translateY(14px) scale(.97)}60%{opacity:1}to{opacity:1;filter:blur(0);transform:none}}
 h1{animation:shine 9s ease-in-out infinite,h1In 1.4s cubic-bezier(.2,.8,.2,1) both}
 @keyframes h1In{from{opacity:0;letter-spacing:12px;transform:scale(.92)}to{opacity:1;letter-spacing:1px;transform:none}}
-.brand{animation:wIn .9s .1s cubic-bezier(.2,.8,.2,1) both}
+.brand{animation:h1In .9s .1s cubic-bezier(.2,.8,.2,1) both}
 
 /* ---- performance: no nested backdrop blur, no filter-blur blobs ---- */
 .item.glass,.chip.glass{-webkit-backdrop-filter:none;backdrop-filter:none;
@@ -281,6 +277,13 @@ h1{animation:shine 9s ease-in-out 3,h1In 1.4s cubic-bezier(.2,.8,.2,1) both}
 .toast:not(.show){-webkit-backdrop-filter:none;backdrop-filter:none}
 .hero-off .hero *,.hero-off .hero *::before,.hero-off .hero *::after{animation-play-state:paused!important}
 
+/* ---- typewriter ---- */
+.tr{color:transparent;-webkit-text-fill-color:transparent}
+.tf{position:relative;opacity:.55}
+.tf::after{content:"";position:absolute;right:-3px;top:.12em;bottom:.12em;width:2px;border-radius:2px;background:var(--pink-soft);box-shadow:0 0 8px var(--pink),0 0 16px var(--pink)}
+.tf:empty::after{display:none}
+.reveal.vis{animation:secIn 1s cubic-bezier(.16,.84,.3,1) backwards}
+@keyframes secIn{from{opacity:0;transform:translateY(28px) scale(.985)}to{opacity:1;transform:none}}
 /* mobile */
 @media (max-width:520px){
   .wrap{padding:16px 14px 50px}
@@ -423,27 +426,60 @@ try{ lang = localStorage.getItem('lang') || ((navigator.language||'ru').toLowerC
 
 const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* scroll reveal: elements get .vis the first time they enter the viewport */
-const io = 'IntersectionObserver' in window ? new IntersectionObserver(es=>{
-  es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('vis'); io.unobserve(e.target); } });
-},{threshold:.18,rootMargin:'0px 0px -6% 0px'}) : null;
-function watch(el){ if(!io||REDUCE){ el.classList.add('vis'); return; } if(!el._w){ el._w=1; io.observe(el); } }
-
-function setText(el, text, base){
-  el.textContent = '';
-  if(REDUCE || el.closest('.desc')){ el.textContent = text; return; }
-  const words = text.split(' ');
-  const step = Math.max(16, Math.min(52, 1100/words.length));
-  const frag = document.createDocumentFragment();
-  words.forEach((w,i)=>{
-    const sp = document.createElement('span');
-    sp.className = 'w'; sp.textContent = w;
-    sp.style.animationDelay = (base + i*step) + 'ms';
-    frag.appendChild(sp);
-    if(i < words.length-1) frag.appendChild(document.createTextNode(' '));
-  });
-  el.appendChild(frag);
+/* ---------- smooth typewriter ----------
+   Full text is always laid out (the not-yet-typed part is transparent), so nothing jumps. */
+const active = new Set();
+let loopOn = false;
+function paint(el, n){
+  const t = el._text, k = Math.max(0, n-4);
+  el._a.textContent = t.slice(0,k);
+  el._f.textContent = t.slice(k,n);
+  el._r.textContent = t.slice(n);
 }
+function loop(now){
+  active.forEach(el=>{
+    const p = (now - el._t0) / el._dur;
+    if(p < 0) return;
+    if(p >= 1){ el.textContent = el._text; el._done = true; active.delete(el); return; }
+    const n = Math.floor(el._text.length * (1 - Math.pow(1-p, 1.35)));
+    if(n !== el._n){ el._n = n; paint(el, n); }
+  });
+  if(active.size) requestAnimationFrame(loop); else loopOn = false;
+}
+function startTyping(el, delay){
+  el._t0 = performance.now() + delay;
+  el._dur = Math.max(600, Math.min(3200, el._text.length * 22));
+  el._n = -1; el._done = false;
+  active.add(el);
+  if(!loopOn){ loopOn = true; requestAnimationFrame(loop); }
+}
+function setText(el, text, delay){
+  active.delete(el);
+  el._text = text;
+  if(REDUCE || el.closest('.desc')){ el.textContent = text; el._done = true; return; }
+  el.textContent = '';
+  el._a = document.createElement('span'); el._f = document.createElement('span'); el._r = document.createElement('span');
+  el._f.className = 'tf'; el._r.className = 'tr';
+  el.append(el._a, el._f, el._r);
+  paint(el, 0);
+  if(el._vis) startTyping(el, delay);
+}
+
+/* start typing the first time an element enters the viewport */
+const io = 'IntersectionObserver' in window ? new IntersectionObserver(es=>{
+  let k = 0;
+  es.forEach(e=>{
+    if(!e.isIntersecting) return;
+    const el = e.target; io.unobserve(el);
+    el._vis = true; el.classList.add('vis');
+    if(el._text !== undefined && !el._done && !el.closest('.desc') && !REDUCE) startTyping(el, (el._d||0) + (el._d ? 0 : 200 + (k++)*110));
+  });
+},{threshold:.2,rootMargin:'0px 0px -6% 0px'}) : null;
+function watch(el){
+  if(!io || REDUCE){ el._vis = true; el.classList.add('vis'); return; }
+  if(!el._w){ el._w = 1; io.observe(el); }
+}
+
 let first = true;
 function apply(l){
   lang = l;
@@ -451,8 +487,9 @@ function apply(l){
   let n = 0;
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const v = T[l][el.dataset.i18n]; if(!v) return;
-    const base = first ? (n<5 ? 300+n*160 : 0) : Math.min(n*18,360);
-    setText(el, v, base); n++;
+    const d = first ? (n<5 ? 250+n*380 : 0) : Math.min(n*35,500);
+    el._d = d;
+    setText(el, v, d); n++;
     if(!el.closest('.desc')) watch(el);
   });
   sw.setAttribute('aria-checked', l==='en' ? 'true' : 'false');
@@ -461,7 +498,7 @@ function apply(l){
 }
 /* sections + staggered cards */
 document.querySelectorAll('.reveal').forEach(sec=>{
-  sec.querySelectorAll('.item').forEach((it,i)=>it.style.setProperty('--i',i));
+  sec.querySelectorAll('.item,.chip').forEach((it,i)=>it.style.setProperty('--i',i));
   watch(sec);
 });
 /* pause hero's endless animations when it is off screen */
