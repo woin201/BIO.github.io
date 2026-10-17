@@ -228,8 +228,10 @@ a.link:hover .em.dc{background:linear-gradient(145deg,rgba(120,110,255,.45),rgba
 .paused *,.paused *::before,.paused *::after{animation-play-state:paused!important}
 
 /* ---- text reveal ---- */
-.w{display:inline-block;opacity:0;animation:wIn .8s cubic-bezier(.2,.8,.2,1) both}
-@keyframes wIn{from{opacity:0;filter:blur(10px);transform:translateY(10px) scale(.96)}to{opacity:1;filter:blur(0);transform:none}}
+.w{display:inline-block;animation:wIn 1.1s cubic-bezier(.16,.84,.3,1) backwards;animation-play-state:paused}
+.vis>.w,.vis .w,.vis.w{animation-play-state:running}
+.brand .w{animation-play-state:running}
+@keyframes wIn{from{opacity:0;filter:blur(12px);transform:translateY(14px) scale(.97)}60%{opacity:1}to{opacity:1;filter:blur(0);transform:none}}
 h1{animation:shine 9s ease-in-out infinite,h1In 1.4s cubic-bezier(.2,.8,.2,1) both}
 @keyframes h1In{from{opacity:0;letter-spacing:12px;transform:scale(.92)}to{opacity:1;letter-spacing:1px;transform:none}}
 .brand{animation:wIn .9s .1s cubic-bezier(.2,.8,.2,1) both}
@@ -262,6 +264,23 @@ header.top{position:sticky;top:12px;z-index:10;padding:7px 8px 7px 22px;border-r
 .refract header.top{-webkit-backdrop-filter:url(#lens-soft) blur(16px) saturate(170%);backdrop-filter:url(#lens-soft) blur(16px) saturate(170%)}
 .glass .ic{position:relative}
 
+
+/* ---- performance pass 2 ---- */
+.avatar{animation:none!important;box-shadow:0 0 0 6px rgba(255,255,255,.06),0 0 50px rgba(224,123,255,.45)}
+.av-wrap{isolation:isolate}
+.av-wrap::before{content:"";position:absolute;inset:-34px;border-radius:50%;z-index:-1;pointer-events:none;
+  background:radial-gradient(circle,rgba(224,123,255,.6),rgba(157,123,255,.25) 50%,transparent 68%);animation:glow 5s ease-in-out infinite}
+@keyframes glow{50%{opacity:.55;transform:scale(1.14)}}
+h1{animation:shine 9s ease-in-out 3,h1In 1.4s cubic-bezier(.2,.8,.2,1) both}
+.drop{animation:drift var(--d) ease-in-out infinite!important;border-radius:50%}
+@keyframes drift{0%,100%{transform:translate3d(0,0,0) scale(1,1) rotate(0)}
+  33%{transform:translate3d(calc(var(--dx)*.6),calc(var(--dy)*.4),0) scale(1.07,.95) rotate(10deg)}
+  66%{transform:translate3d(var(--dx),var(--dy),0) scale(.94,1.06) rotate(-8deg)}}
+.drops,.sparks,#rain{contain:strict}
+.card{content-visibility:auto;contain-intrinsic-size:auto 280px}
+.toast:not(.show){-webkit-backdrop-filter:none;backdrop-filter:none}
+.hero-off .hero *,.hero-off .hero *::before,.hero-off .hero *::after{animation-play-state:paused!important}
+
 /* mobile */
 @media (max-width:520px){
   .wrap{padding:16px 14px 50px}
@@ -275,7 +294,7 @@ header.top{position:sticky;top:12px;z-index:10;padding:7px 8px 7px 22px;border-r
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before{animation:none!important;transition-duration:.01ms!important}
-  .reveal{opacity:1;transform:none}
+  .reveal:not(.vis),.reveal:not(.vis) .item,.reveal:not(.vis) .chip{opacity:1;transform:none}
 }
 </style>
 </head>
@@ -403,11 +422,18 @@ let lang = 'ru';
 try{ lang = localStorage.getItem('lang') || ((navigator.language||'ru').toLowerCase().startsWith('ru') ? 'ru' : 'en'); }catch(e){}
 
 const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* scroll reveal: elements get .vis the first time they enter the viewport */
+const io = 'IntersectionObserver' in window ? new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('vis'); io.unobserve(e.target); } });
+},{threshold:.18,rootMargin:'0px 0px -6% 0px'}) : null;
+function watch(el){ if(!io||REDUCE){ el.classList.add('vis'); return; } if(!el._w){ el._w=1; io.observe(el); } }
+
 function setText(el, text, base){
   el.textContent = '';
-  if(REDUCE){ el.textContent = text; return; }
+  if(REDUCE || el.closest('.desc')){ el.textContent = text; return; }
   const words = text.split(' ');
-  const step = Math.max(14, Math.min(46, 900/words.length));
+  const step = Math.max(16, Math.min(52, 1100/words.length));
   const frag = document.createDocumentFragment();
   words.forEach((w,i)=>{
     const sp = document.createElement('span');
@@ -425,14 +451,21 @@ function apply(l){
   let n = 0;
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const v = T[l][el.dataset.i18n]; if(!v) return;
-    // first load: cascade down the page; later: quick cascade for the language swap
-    const base = first ? 350 + n*85 : n*22;
-    setText(el, v, Math.min(base, first ? 1800 : 500)); n++;
+    const base = first ? (n<5 ? 300+n*160 : 0) : Math.min(n*18,360);
+    setText(el, v, base); n++;
+    if(!el.closest('.desc')) watch(el);
   });
   sw.setAttribute('aria-checked', l==='en' ? 'true' : 'false');
   try{ localStorage.setItem('lang', l); }catch(e){}
   first = false;
 }
+/* sections + staggered cards */
+document.querySelectorAll('.reveal').forEach(sec=>{
+  sec.querySelectorAll('.item').forEach((it,i)=>it.style.setProperty('--i',i));
+  watch(sec);
+});
+/* pause hero's endless animations when it is off screen */
+if(io){ new IntersectionObserver(es=>document.body.classList.toggle('hero-off',!es[0].isIntersecting)).observe(document.querySelector('.hero')); }
 apply(lang);
 
 /* swipe / drag / click on the language switch */
@@ -479,7 +512,7 @@ document.addEventListener('pointermove', e=>{
     const g = e.target.closest && e.target.closest('.glass');
     if(g){ const r=g.getBoundingClientRect();
       g.style.setProperty('--mx',(e.clientX-r.left)+'px'); g.style.setProperty('--my',(e.clientY-r.top)+'px'); }
-    orb.style.setProperty('--ox',e.clientX+'px'); orb.style.setProperty('--oy',e.clientY+'px');
+    orb.style.transform='translate3d('+e.clientX+'px,'+e.clientY+'px,0)';
     const r=av.getBoundingClientRect(), dx=(e.clientX-r.left-r.width/2)/innerWidth, dy=(e.clientY-r.top-r.height/2)/innerHeight;
     av.style.transform=`perspective(600px) rotateY(${dx*18}deg) rotateX(${-dy*18}deg)`;
   });
@@ -513,33 +546,36 @@ document.getElementById('discord').addEventListener('click', e=>{
   setTimeout(()=>toast.classList.remove('show'), 2200);
 });
 
-/* rain */
+/* rain: 6 batched strokes per frame, time based, 30fps cap on phones */
 (function(){
-  const c = document.getElementById('rain'), ctx = c.getContext('2d');
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  let w,h,drops=[],dpr=1;
-  function resize(){
-    w=innerWidth;h=innerHeight;c.width=w*dpr;c.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
-    const n=Math.round(Math.min(w<700?70:130,w*h/10000));
-    drops=Array.from({length:n},mk);
-  }
-  function mk(){return{x:Math.random()*(w+200)-100,y:Math.random()*h,l:18+Math.random()*50,v:9+Math.random()*13,a:.12+Math.random()*.4,t:Math.random()<.15}}
-  const slant=.26;
-  function tick(){
-    ctx.clearRect(0,0,w,h);
-    ctx.lineCap='round';
-    for(const d of drops){
-      ctx.strokeStyle = d.t ? `rgba(255,190,245,${d.a})` : `rgba(255,255,255,${d.a})`;
-      ctx.lineWidth = d.l>45 ? 1.5 : 1;
-      ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x+d.l*slant,d.y+d.l);ctx.stroke();
-      d.y+=d.v;d.x+=d.v*slant;
-      if(d.y>h){d.y=-d.l;d.x=Math.random()*(w+200)-100}
+  const c=document.getElementById('rain'), ctx=c.getContext('2d',{alpha:true});
+  if(REDUCE) return;
+  let w,h,drops=[],last=0,running=false;
+  const slant=.26, small=innerWidth<700, minDt=small?33:16;
+  const styles=[['rgba(255,255,255,.14)',1],['rgba(255,255,255,.3)',1],['rgba(255,255,255,.5)',1.4],['rgba(255,190,245,.35)',1.2],['rgba(255,190,245,.55)',1.5]];
+  function mk(i){return{x:Math.random()*(w+200)-100,y:Math.random()*h,l:18+Math.random()*50,v:540+Math.random()*780,g:i%styles.length}}
+  function resize(){ w=innerWidth;h=innerHeight;c.width=w;c.height=h;
+    const n=Math.round(Math.min(small?60:120,w*h/11000)); drops=Array.from({length:n},(_,i)=>mk(i)); }
+  function tick(t){
+    if(document.hidden){ running=false; return; }
+    requestAnimationFrame(tick);
+    const dt=t-last; if(dt<minDt) return; last=t;
+    const k=Math.min(dt,50)/1000;
+    ctx.clearRect(0,0,w,h); ctx.lineCap='round';
+    for(let g=0;g<styles.length;g++){
+      ctx.strokeStyle=styles[g][0]; ctx.lineWidth=styles[g][1]; ctx.beginPath();
+      for(const d of drops){ if(d.g!==g) continue;
+        ctx.moveTo(d.x,d.y); ctx.lineTo(d.x+d.l*slant,d.y+d.l);
+        d.y+=d.v*k; d.x+=d.v*k*slant;
+        if(d.y>h){d.y=-d.l;d.x=Math.random()*(w+200)-100}
+      }
+      ctx.stroke();
     }
-    if(!document.hidden) requestAnimationFrame(tick);
   }
-  document.addEventListener('visibilitychange',()=>{ document.documentElement.classList.toggle('paused',document.hidden); if(!document.hidden) requestAnimationFrame(tick); });
+  function start(){ if(!running){ running=true; last=performance.now(); requestAnimationFrame(tick); } }
+  document.addEventListener('visibilitychange',()=>{ document.documentElement.classList.toggle('paused',document.hidden); if(!document.hidden) start(); });
   let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(resize,150)});
-  resize();tick();
+  resize(); start();
 })();
 </script>
 </body>
