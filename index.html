@@ -168,7 +168,7 @@ h1{background:linear-gradient(100deg,#fff 20%,#ffd1f7 40%,#c9a7ff 55%,#fff 75%);
 .glass:hover::after{transform:translateX(120%)}
 @media (max-width:700px),(pointer:coarse){
   .glass{-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%)}
-  .blob{filter:blur(60px)}.orb{display:none}
+  .orb{display:none}
 }
 
 
@@ -226,6 +226,42 @@ a.link:hover .em.dc{background:linear-gradient(145deg,rgba(120,110,255,.45),rgba
 .grid{align-items:start}
 @media (min-width:861px){.item.dev{min-height:160px}}
 .paused *,.paused *::before,.paused *::after{animation-play-state:paused!important}
+
+/* ---- text reveal ---- */
+.w{display:inline-block;opacity:0;animation:wIn .8s cubic-bezier(.2,.8,.2,1) both}
+@keyframes wIn{from{opacity:0;filter:blur(10px);transform:translateY(10px) scale(.96)}to{opacity:1;filter:blur(0);transform:none}}
+h1{animation:shine 9s ease-in-out infinite,h1In 1.4s cubic-bezier(.2,.8,.2,1) both}
+@keyframes h1In{from{opacity:0;letter-spacing:12px;transform:scale(.92)}to{opacity:1;letter-spacing:1px;transform:none}}
+.brand{animation:wIn .9s .1s cubic-bezier(.2,.8,.2,1) both}
+
+/* ---- performance: no nested backdrop blur, no filter-blur blobs ---- */
+.item.glass,.chip.glass{-webkit-backdrop-filter:none;backdrop-filter:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.05) 55%,rgba(224,123,255,.09))}
+.blob{filter:none!important;opacity:.7}
+
+/* ---- sticky glass nav ---- */
+header.top{position:sticky;top:12px;z-index:10;padding:7px 8px 7px 22px;border-radius:999px;margin-bottom:22px}
+
+/* ---- liquid drops floating in the background ---- */
+.drops{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.drop{position:absolute;width:var(--s);height:var(--s);left:var(--x);top:var(--y);
+  background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.55),rgba(255,255,255,.08) 28%,rgba(224,123,255,.14) 62%,rgba(157,123,255,.28));
+  box-shadow:inset 0 2px 6px rgba(255,255,255,.55),inset 0 -10px 24px rgba(224,123,255,.35),0 20px 60px rgba(157,123,255,.25);
+  border:1px solid rgba(255,255,255,.18);
+  animation:morph var(--m) ease-in-out infinite,drift var(--d) ease-in-out infinite;will-change:transform,border-radius;opacity:.8}
+@keyframes morph{0%,100%{border-radius:50% 50% 50% 50%/50% 50% 50% 50%}25%{border-radius:58% 42% 46% 54%/46% 56% 44% 54%}50%{border-radius:44% 56% 58% 42%/54% 44% 56% 46%}75%{border-radius:52% 48% 40% 60%/58% 42% 58% 42%}}
+@keyframes drift{50%{transform:translate3d(var(--dx),var(--dy),0) rotate(25deg)}}
+
+/* ---- ripple on tap ---- */
+.rip{position:absolute;border-radius:50%;pointer-events:none;z-index:0;width:20px;height:20px;margin:-10px 0 0 -10px;
+  background:radial-gradient(circle,rgba(255,255,255,.55),rgba(224,123,255,.25) 50%,transparent 70%);animation:rip .8s ease-out forwards}
+@keyframes rip{to{transform:scale(14);opacity:0}}
+
+/* ---- refraction (Chromium only, set by JS) ---- */
+.refract .thumb{-webkit-backdrop-filter:url(#lens) blur(2px) saturate(220%) brightness(1.25);backdrop-filter:url(#lens) blur(2px) saturate(220%) brightness(1.25)}
+.refract header.top{-webkit-backdrop-filter:url(#lens-soft) blur(16px) saturate(170%);backdrop-filter:url(#lens-soft) blur(16px) saturate(170%)}
+.glass .ic{position:relative}
+
 /* mobile */
 @media (max-width:520px){
   .wrap{padding:16px 14px 50px}
@@ -247,11 +283,26 @@ a.link:hover .em.dc{background:linear-gradient(145deg,rgba(120,110,255,.45),rgba
 <div class="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
 <canvas id="rain" aria-hidden="true"></canvas>
 <div class="vignette"></div>
+<div class="drops" aria-hidden="true">
+  <i class="drop" style="--s:min(220px,34vw);--x:6%;--y:58%;--m:14s;--d:19s;--dx:30px;--dy:-40px"></i>
+  <i class="drop" style="--s:min(150px,26vw);--x:84%;--y:14%;--m:11s;--d:23s;--dx:-34px;--dy:30px"></i>
+  <i class="drop" style="--s:min(110px,20vw);--x:72%;--y:72%;--m:9s;--d:17s;--dx:-20px;--dy:-34px"></i>
+</div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="lens" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.012 0.03" numOctaves="2" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="lens-soft" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+    <feTurbulence type="fractalNoise" baseFrequency="0.006 0.02" numOctaves="1" seed="9" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
 <div class="sparks" id="sparks" aria-hidden="true"></div>
 <div class="orb" id="orb" aria-hidden="true"></div>
 
 <div class="wrap">
-  <header class="top">
+  <header class="top glass">
     <div class="brand">BIO</div>
     <button class="lang" id="lang" role="switch" aria-checked="false" aria-label="Language / Язык">
       <span class="thumb"></span>
@@ -351,18 +402,37 @@ const sw = document.getElementById('lang');
 let lang = 'ru';
 try{ lang = localStorage.getItem('lang') || ((navigator.language||'ru').toLowerCase().startsWith('ru') ? 'ru' : 'en'); }catch(e){}
 
-let apply=function(l){
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function setText(el, text, base){
+  el.textContent = '';
+  if(REDUCE){ el.textContent = text; return; }
+  const words = text.split(' ');
+  const step = Math.max(14, Math.min(46, 900/words.length));
+  const frag = document.createDocumentFragment();
+  words.forEach((w,i)=>{
+    const sp = document.createElement('span');
+    sp.className = 'w'; sp.textContent = w;
+    sp.style.animationDelay = (base + i*step) + 'ms';
+    frag.appendChild(sp);
+    if(i < words.length-1) frag.appendChild(document.createTextNode(' '));
+  });
+  el.appendChild(frag);
+}
+let first = true;
+function apply(l){
   lang = l;
   document.documentElement.lang = l;
-  document.querySelectorAll('[data-i18n]').forEach(el=>{ const v=T[l][el.dataset.i18n]; if(v) el.textContent=v; });
+  let n = 0;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const v = T[l][el.dataset.i18n]; if(!v) return;
+    // first load: cascade down the page; later: quick cascade for the language swap
+    const base = first ? 350 + n*85 : n*22;
+    setText(el, v, Math.min(base, first ? 1800 : 500)); n++;
+  });
   sw.setAttribute('aria-checked', l==='en' ? 'true' : 'false');
   try{ localStorage.setItem('lang', l); }catch(e){}
-};
-let first=true;
-const _apply=apply;
-apply=function(l){ _apply(l); if(!first && document.body.animate){
-  document.querySelectorAll('[data-i18n],.lang-anim').forEach((el,i)=>el.animate([{opacity:0,filter:'blur(8px)',transform:'translateY(6px)'},{opacity:1,filter:'blur(0)',transform:'none'}],{duration:520,delay:Math.min(i*12,180),easing:'cubic-bezier(.2,.8,.2,1)'}));
- } first=false; };
+  first = false;
+}
 apply(lang);
 
 /* swipe / drag / click on the language switch */
@@ -415,8 +485,19 @@ document.addEventListener('pointermove', e=>{
   });
 },{passive:true});
 
+/* refraction only where url() backdrop-filters work (Chromium) */
+try{ if(navigator.userAgentData ? navigator.userAgentData.brands.some(b=>/Chromium/.test(b.brand)) : /Chrome\//.test(navigator.userAgent) && !/Edg\/|OPR\//.test('')) document.documentElement.classList.add('refract'); }catch(e){}
+
+/* liquid ripple on press */
+document.addEventListener('pointerdown',e=>{
+  const g=e.target.closest&&e.target.closest('.item,.chip'); if(!g||REDUCE) return;
+  const r=g.getBoundingClientRect(), d=document.createElement('i'); d.className='rip';
+  d.style.left=(e.clientX-r.left)+'px'; d.style.top=(e.clientY-r.top)+'px';
+  g.appendChild(d); setTimeout(()=>d.remove(),850);
+},{passive:true});
+
 /* twinkling sparks */
-(function(){const w=document.getElementById('sparks');const n=innerWidth<700?14:28;
+(function(){const w=document.getElementById('sparks');const n=innerWidth<700?8:20;
   for(let i=0;i<n;i++){const t=document.createElement('i');
     t.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${3+Math.random()*4}s;--dl:${-Math.random()*6}s`;w.appendChild(t);}})();
 
@@ -436,7 +517,7 @@ document.getElementById('discord').addEventListener('click', e=>{
 (function(){
   const c = document.getElementById('rain'), ctx = c.getContext('2d');
   if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  let w,h,drops=[],dpr=Math.min(devicePixelRatio||1,2);
+  let w,h,drops=[],dpr=1;
   function resize(){
     w=innerWidth;h=innerHeight;c.width=w*dpr;c.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
     const n=Math.round(Math.min(w<700?70:130,w*h/10000));
