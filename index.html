@@ -357,6 +357,51 @@ footer{text-shadow:0 1px 12px #000,0 0 18px rgba(7,5,12,.9)}
   .hero{padding:20px 16px}.av-wrap{width:96px;margin-bottom:12px}h1{font-size:2.4rem}
 }
 
+/* ---- name: slightly bolder ---- */
+h1{font-weight:800;-webkit-text-stroke:.6px rgba(255,255,255,.35);paint-order:stroke fill}
+.brand{font-weight:800}
+footer{font-weight:600}
+
+/* ---- search ---- */
+.search{display:flex;gap:10px;align-items:center}
+.search input{flex:1;min-width:0;height:50px;padding:0 20px;border-radius:999px;border:1px solid rgba(255,255,255,.14);
+  background:rgba(8,4,16,.45);color:#fff;font:inherit;font-size:16px;letter-spacing:.3px;outline:none;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.4);transition:border-color .25s,box-shadow .25s}
+.search input::placeholder{color:rgba(255,255,255,.45)}
+.search input:focus{border-color:rgba(214,150,255,.7);box-shadow:inset 0 2px 8px rgba(0,0,0,.4),0 0 0 3px rgba(176,96,255,.25)}
+.search .go{flex:none;width:50px;height:50px;border-radius:50%;border:1px solid rgba(255,255,255,.2);cursor:pointer;color:#fff;font-size:1.3rem;
+  background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(176,96,255,.35));transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .25s}
+.search .go:hover{transform:translateX(2px) scale(1.05)}
+.search .go:active{transform:scale(.94)}
+.search .go:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
+.search.bad{animation:nope .45s}
+@keyframes nope{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+
+/* ---- softer liquid glass (easier on the eyes) ---- */
+.glass{
+  background:
+    radial-gradient(130% 100% at 0% 0%,rgba(255,255,255,.07),transparent 55%),
+    linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.012) 60%,rgba(176,96,255,.05));
+  -webkit-backdrop-filter:blur(24px) saturate(130%);backdrop-filter:blur(24px) saturate(130%);
+  border:1px solid rgba(255,255,255,.07);
+  box-shadow:
+    inset 1px 1px 0 rgba(255,255,255,.22),
+    inset -1px -1px 0 rgba(190,130,255,.16),
+    inset 10px 12px 24px -18px rgba(255,255,255,.14),
+    inset -10px -12px 26px -20px rgba(140,100,255,.22),
+    0 20px 50px -16px rgba(0,0,0,.6);
+}
+.item.glass,.chip.glass{
+  background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.02) 60%,rgba(176,96,255,.05));
+  box-shadow:inset 1px 1px 0 rgba(255,255,255,.18),inset -1px -1px 0 rgba(190,130,255,.12),0 8px 20px -10px rgba(0,0,0,.5)}
+.glass:hover{border-color:rgba(255,255,255,.11)}
+.glass::before{background:radial-gradient(260px circle at var(--mx,30%) var(--my,0%),rgba(255,255,255,.08),transparent 60%)}
+.refract header.top{-webkit-backdrop-filter:blur(14px) url(#lens-soft) saturate(130%);backdrop-filter:blur(14px) url(#lens-soft) saturate(130%)}
+.refract .thumb{-webkit-backdrop-filter:blur(2px) url(#lens) saturate(140%) brightness(1.08);backdrop-filter:blur(2px) url(#lens) saturate(140%) brightness(1.08)}
+.thumb{background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.08) 55%,rgba(176,96,255,.18));
+  box-shadow:inset 1px 1px 1px rgba(255,255,255,.5),inset -1px -2px 5px rgba(176,96,255,.3),0 4px 14px rgba(120,70,220,.35),0 0 0 1px rgba(255,255,255,.16)}
+@media (max-width:700px),(pointer:coarse){.glass{-webkit-backdrop-filter:blur(16px) saturate(125%);backdrop-filter:blur(16px) saturate(125%)}}
+
 /* fallbacks */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   .glass,.lang,.thumb{background:rgba(30,18,44,.85)}
@@ -443,6 +488,14 @@ footer{text-shadow:0 1px 12px #000,0 0 18px rgba(7,5,12,.9)}
     </section>
 
     <section class="card glass reveal">
+      <h2><span class="ic">⌕</span><span data-i18n="searchTitle">Search</span></h2>
+      <form class="search" id="search" autocomplete="off" role="search">
+        <input id="q" type="text" inputmode="text" enterkeyhint="go" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Search" data-ph="searchPh">
+        <button type="submit" class="go" aria-label="Go">→</button>
+      </form>
+    </section>
+
+    <section class="card glass reveal">
       <h2><span class="ic">⌖</span><span data-i18n="locTitle">Location</span></h2>
       <p data-i18n="locText" style="font-size:1.05rem"></p>
     </section>
@@ -462,7 +515,7 @@ const T = {
     mainPhone:"Основной телефон", experiment:"Эксперименты", ubl:"Разблокирован BL",
     workstation:"Рабочая станция", monMain:"Основной монитор", monDual:"Второй монитор", console:"Игровая консоль",
     connectTitle:"Связь", tgLabel:"Telegram (официальный)",
-    locTitle:"Местоположение", locText:"Живу в Санкт-Петербурге, Россия.",
+    locTitle:"Местоположение", searchTitle:"Поиск", searchPh:"Введи запрос…", notFound:"Ничего не найдено", opening:"Открываю…", locText:"Живу в Санкт-Петербурге, Россия.",
     copied:"Ник Discord скопирован: woin201",
     c1:"📍 Санкт-Петербург", c2:"⌨ Код", c3:"📱 Мобильные технологии",
     d_iphone:"iPhone 12 — один из самых популярных смартфонов Apple, вышел в октябре 2020 года. Чип A14 Bionic, OLED-экран 6.1″, 5G и MagSafe.",
@@ -480,7 +533,7 @@ const T = {
     mainPhone:"Main Phone", experiment:"Experiment", ubl:"Unlocked BL",
     workstation:"Workstation", monMain:"Monitor Main", monDual:"Dual Monitor", console:"Game Console",
     connectTitle:"Connect Online", tgLabel:"Telegram (Official)",
-    locTitle:"Location", locText:"Based in St. Petersburg, Russia.",
+    locTitle:"Location", searchTitle:"Search", searchPh:"Type a query…", notFound:"Nothing found", opening:"Opening…", locText:"Based in St. Petersburg, Russia.",
     copied:"Discord username copied: woin201",
     c1:"📍 Saint Petersburg", c2:"⌨ Code", c3:"📱 Mobile tech",
     d_iphone:"iPhone 12 is one of Apple's most popular smartphones, released in October 2020. A14 Bionic chip, 6.1″ OLED display, 5G and MagSafe.",
@@ -564,6 +617,7 @@ function apply(l){
     setText(el, v, d); n++;
     if(!el.closest('.desc')) watch(el);
   });
+  document.querySelectorAll('[data-ph]').forEach(el=>{ el.placeholder = T[l][el.dataset.ph]; });
   sw.setAttribute('aria-checked', l==='en' ? 'true' : 'false');
   try{ localStorage.setItem('lang', l); }catch(e){}
   first = false;
@@ -652,6 +706,22 @@ document.getElementById('discord').addEventListener('click', e=>{
   toast.classList.add('show');
   setTimeout(()=>toast.classList.remove('show'), 2200);
 });
+
+/* search bar: exact keyword -> redirect */
+(function(){
+  const f=document.getElementById('search'), q=document.getElementById('q');
+  const ROUTES={ 'dotl.net':'https://aurafarmxd.github.io/CatLive/secret.html' };
+  let tt;
+  f.addEventListener('submit',e=>{
+    e.preventDefault();
+    const key=q.value.trim().toLowerCase(), url=ROUTES[key];
+    clearTimeout(tt);
+    if(url){ toast.textContent=T[lang].opening; toast.classList.add('show'); setTimeout(()=>{ location.href=url; },350); return; }
+    toast.textContent=T[lang].notFound; toast.classList.add('show');
+    f.classList.remove('bad'); void f.offsetWidth; f.classList.add('bad');
+    tt=setTimeout(()=>toast.classList.remove('show'),1800);
+  });
+})();
 
 /* ============ MATRIX: purple code rain ============
    One canvas, fully cleared each frame, glyphs batched by colour bucket (5 fillStyle swaps per frame).
