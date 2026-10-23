@@ -375,9 +375,6 @@ footer{font-weight:600}
 .search .go:active{transform:scale(.94)}
 .search .go:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
 .search.bad{animation:nope .45s}
-@keyframes quake{0%,100%{transform:none}20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,-3px)}80%{transform:translate(4px,4px)}}
-body.quake{animation:quake .6s}
-@media (prefers-reduced-motion:reduce){body.quake{animation:none}}
 @keyframes nope{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
 
 /* ---- softer liquid glass (easier on the eyes) ---- */
@@ -710,52 +707,19 @@ document.getElementById('discord').addEventListener('click', e=>{
   setTimeout(()=>toast.classList.remove('show'), 2200);
 });
 
-/* search bar: exact keyword -> redirect, plus easter eggs */
+/* search bar: exact keyword -> redirect */
 (function(){
-  const f=document.getElementById('search'), q=document.getElementById('q'), mx=document.getElementById('matrix');
+  const f=document.getElementById('search'), q=document.getElementById('q');
   const ROUTES={ 'dotl.net':'https://aurafarmxd.github.io/CatLive/secret.html' };
-  /* [ru, en, effect?] — keys are lowercase, spaces collapsed */
-  const EGGS={
-    'лох':['Сам ты лох 😎','No, you are 😎'], 'loh':['Сам ты лох 😎','No, you are 😎'], 'lox':['Сам ты лох 😎','No, you are 😎'],
-    'loser':['Сам ты лох 😎','No, you are 😎'], 'лошара':['Сам ты лох 😎','No, you are 😎'], 'лохи':['Сам ты лох 😎','No, you are 😎'],
-    'привет':['Привет-привет 👋','Hello there 👋'], 'hello':['Привет-привет 👋','Hello there 👋'], 'hi':['Привет-привет 👋','Hello there 👋'],
-    'woin201':['Это же я! Эй, не пались 👀','That\'s me! Don\'t blow my cover 👀'], 'woinroot':['Это мой телеграм 😏','That\'s my Telegram 😏'],
-    'matrix':['Нет никакой ложки 🥄','There is no spoon 🥄','flash'], 'матрица':['Нет никакой ложки 🥄','There is no spoon 🥄','flash'],
-    'neo':['Проснись, Нео…','Wake up, Neo…','flash'], 'нео':['Проснись, Нео…','Wake up, Neo…','flash'],
-    'red pill':['Ты выбрал красную таблетку 💊','You chose the red pill 💊','hue'], 'красная таблетка':['Ты выбрал красную таблетку 💊','You chose the red pill 💊','hue'],
-    'blue pill':['Синяя таблетка: ничего не изменилось 😴','Blue pill: nothing changed 😴'], 'синяя таблетка':['Синяя таблетка: ничего не изменилось 😴','Blue pill: nothing changed 😴'],
-    'sudo':['Нет прав, я тут главный 😤','Permission denied. I\'m the boss here 😤'], 'sudo su':['Нет прав, я тут главный 😤','Permission denied. I\'m the boss here 😤'],
-    'rm -rf /':['Ну ты и отчаянный 💀 Не вышло','Nice try 💀 Not today','shake'], 'rm -rf':['Ну ты и отчаянный 💀 Не вышло','Nice try 💀 Not today','shake'],
-    'hack':['Взлом начат… шутка 😄','Hacking in progress… just kidding 😄','shake'], 'хак':['Взлом начат… шутка 😄','Hacking in progress… just kidding 😄','shake'],
-    'взлом':['Взлом начат… шутка 😄','Hacking in progress… just kidding 😄','shake'],
-    'радуга':['Радужный дождь 🌈','Rainbow rain 🌈','hue'], 'rainbow':['Радужный дождь 🌈','Rainbow rain 🌈','hue'],
-    'party':['Вечеринка! 🎉','Party time! 🎉','hue'], 'вечеринка':['Вечеринка! 🎉','Party time! 🎉','hue'],
-    '42':['Ответ на главный вопрос жизни 🌌','The answer to life, the universe and everything 🌌'],
-    '1337':['l33t h4x0r detected 😎','l33t h4x0r detected 😎'], 'leet':['l33t h4x0r detected 😎','l33t h4x0r detected 😎'],
-    'кот':['Мяу 🐱','Meow 🐱'], 'cat':['Мяу 🐱','Meow 🐱'], 'кошка':['Мяу 🐱 (а ты искал CatLive?)','Meow 🐱 (looking for CatLive?)'],
-    'пароль':['Пароль — это не здесь 🔐','The password isn\'t here 🔐'], 'password':['Пароль — это не здесь 🔐','The password isn\'t here 🔐'],
-    'secret':['Секрет где-то рядом… попробуй DOTL.NET 🤫','A secret is nearby… try DOTL.NET 🤫'], 'секрет':['Секрет где-то рядом… попробуй DOTL.NET 🤫','A secret is nearby… try DOTL.NET 🤫'],
-    'help':['Подсказка: тут спрятаны пасхалки 🥚','Hint: there are easter eggs in here 🥚'], 'помощь':['Подсказка: тут спрятаны пасхалки 🥚','Hint: there are easter eggs in here 🥚'],
-    'пасхалка':['Ты нашёл пасхалку 🥚 Но есть и другие…','You found an easter egg 🥚 There are more…'], 'easter egg':['Ты нашёл пасхалку 🥚 Но есть и другие…','You found an easter egg 🥚 There are more…'],
-    'i love you':['Я тоже тебя… нет, я просто сайт 🥹','I… I\'m just a website 🥹'], 'я тебя люблю':['Я тоже тебя… нет, я просто сайт 🥹','I… I\'m just a website 🥹'],
-    'бог':['Он смотрит на твой код-дождь ✨','He\'s watching your code rain ✨'], 'god':['Он смотрит на твой код-дождь ✨','He\'s watching your code rain ✨']
-  };
-  const norm=v=>v.trim().toLowerCase().replace(/\s+/g,' ');
-  let tt, fx;
-  const say=(txt,ms)=>{ toast.textContent=txt; toast.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>toast.classList.remove('show'),ms); };
-  const effect=n=>{
-    clearTimeout(fx);
-    if(n==='hue'){ mx.style.transition='filter 2.5s linear'; mx.style.filter='hue-rotate(360deg) saturate(1.6)'; fx=setTimeout(()=>{ mx.style.transition='none'; mx.style.filter=''; },4000); }
-    if(n==='flash'){ mx.style.transition='filter .25s'; mx.style.filter='brightness(2.2) saturate(1.4)'; fx=setTimeout(()=>{ mx.style.filter=''; },1200); }
-    if(n==='shake'){ document.body.classList.remove('quake'); void document.body.offsetWidth; document.body.classList.add('quake'); fx=setTimeout(()=>document.body.classList.remove('quake'),700); }
-  };
+  let tt;
   f.addEventListener('submit',e=>{
     e.preventDefault();
-    const key=norm(q.value), url=ROUTES[key], egg=EGGS[key];
-    if(url){ say(T[lang].opening,1500); setTimeout(()=>{ location.href=url; },350); return; }
-    if(egg){ say(egg[lang==='en'?1:0],3000); if(egg[2]) effect(egg[2]); return; }
-    say(T[lang].notFound,1800);
+    const key=q.value.trim().toLowerCase(), url=ROUTES[key];
+    clearTimeout(tt);
+    if(url){ toast.textContent=T[lang].opening; toast.classList.add('show'); setTimeout(()=>{ location.href=url; },350); return; }
+    toast.textContent=T[lang].notFound; toast.classList.add('show');
     f.classList.remove('bad'); void f.offsetWidth; f.classList.add('bad');
+    tt=setTimeout(()=>toast.classList.remove('show'),1800);
   });
 })();
 
