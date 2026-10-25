@@ -703,7 +703,7 @@ function reveal(el){
 function checkReveal(){
   revealK = 0;
   const atEnd = scrollY + innerHeight >= document.documentElement.scrollHeight - 6;
-  watched.forEach(el=>{ const r = el.getBoundingClientRect(); if(r.bottom > 0 && (r.top < innerHeight*0.68 || (atEnd && r.top < innerHeight))) reveal(el); });
+  watched.forEach(el=>{ const r = el.getBoundingClientRect(); if(r.top < innerHeight*0.68 || (atEnd && r.top < innerHeight)) reveal(el);   /* also anything already scrolled past */ });
 }
 function watch(el){
   if(REDUCE){ el._vis = true; el.classList.add('vis'); return; }
