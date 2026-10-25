@@ -419,8 +419,18 @@ footer{font-weight:600}
   transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
 .theme:hover{transform:scale(1.07) rotate(-10deg)}.theme:active{transform:scale(.92)}
 .theme:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
-.theme .sun{display:none}
-html[data-theme="light"] .theme .sun{display:block}html[data-theme="light"] .theme .moon{display:none}
+.theme{position:relative;overflow:hidden}
+.theme .moon,.theme .sun,.theme .on,.theme .off{position:absolute;inset:0;display:grid;place-items:center;transition:transform .6s cubic-bezier(.34,1.56,.64,1),opacity .35s}
+.theme .sun{transform:rotate(-140deg) scale(.2);opacity:0}
+html[data-theme="light"] .theme .sun{transform:none;opacity:1}
+html[data-theme="light"] .theme .moon{transform:rotate(140deg) scale(.2);opacity:0}
+.theme .off{transform:scale(.2) rotate(-60deg);opacity:0}
+html.snd-off .theme .on{transform:scale(.2) rotate(60deg);opacity:0}
+html.snd-off .theme .off{transform:none;opacity:1}
+.theme.pop{animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{40%{transform:scale(.78) rotate(-14deg)}100%{transform:none}}
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-old(root){z-index:1}::view-transition-new(root){z-index:2}
 @media (max-width:700px){.theme{width:44px;height:44px;font-size:1.15rem}.ctl{gap:8px}}
 
 /* ---- DAY theme (cream & pink) ---- */
@@ -459,6 +469,24 @@ html[data-theme="light"] .avatar{border-color:rgba(255,255,255,.9)}
 html[data-theme="light"] footer{text-shadow:none}
 html[data-theme="light"] .item.dev.open .chev,html[data-theme="light"] .chev{color:#7a1550}
 
+
+/* ---- smooth & light: perf pass 3 ---- */
+.glass{-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.chip,.reveal.vis .chip{animation:none}
+.reveal.vis .chip{animation:itemIn .9s calc(var(--i,0)*80ms + 600ms) cubic-bezier(.16,.84,.3,1) backwards}
+.ring{filter:none;will-change:transform}
+.av-wrap::before{animation:none}
+h1{animation:h1In 1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes h1In{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes secIn{from{opacity:0}to{opacity:1}}
+@media (max-width:700px),(pointer:coarse){
+  .glass,.lang,.theme,.thumb{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .glass{background:linear-gradient(135deg,rgba(56,20,43,.74),rgba(34,12,28,.66))}
+  .item.glass,.chip.glass{background:linear-gradient(135deg,rgba(70,26,54,.62),rgba(44,16,36,.56))}
+  html[data-theme="light"] .glass{background:linear-gradient(135deg,rgba(255,255,255,.88),rgba(255,236,246,.8))}
+  html[data-theme="light"] .item.glass,html[data-theme="light"] .chip.glass{background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(255,230,243,.84))}
+}
+
 /* fallbacks */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   .glass,.lang,.thumb{background:rgba(44,18,35,.85)}
@@ -470,7 +498,7 @@ html[data-theme="light"] .item.dev.open .chev,html[data-theme="light"] .chev{col
 </style>
 </head>
 <body>
-<script>try{if(localStorage.getItem("theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
+<script>try{if(localStorage.getItem("theme")==="light")document.documentElement.setAttribute("data-theme","light");if(localStorage.getItem("snd")==="off")document.documentElement.classList.add("snd-off")}catch(e){}</script>
 <canvas id="matrix" aria-hidden="true"></canvas>
 <div class="vignette"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -503,6 +531,7 @@ html[data-theme="light"] .item.dev.open .chev,html[data-theme="light"] .chev{col
     <div class="brand">BIO</div>
     <div class="ctl">
       <button class="theme" id="theme" type="button" aria-label="Night / Day" title="Night / Day"><span class="moon">🌙</span><span class="sun">☀️</span></button>
+      <button class="theme" id="snd" type="button" aria-label="Sound on/off" title="Sound"><span class="on">🔊</span><span class="off">🔇</span></button>
       <button class="lang" id="lang" role="switch" aria-checked="false" aria-label="Language / Язык">
         <span class="thumb"></span>
         <span class="opt ru">RU</span><span class="opt en">EN</span>
@@ -627,27 +656,34 @@ function loop(now){
     const p = (now - el._t0) / el._dur;
     if(p < 0) return;
     if(p >= 1){ el.textContent = el._text; el._done = true; active.delete(el); return; }
-    const n = Math.floor(el._text.length * (1 - Math.pow(1-p, 1.35)));
-    if(n !== el._n){ el._n = n; paint(el, n); }
+    const n = Math.floor(el._text.length * p);       /* constant speed: no running ahead */
+    if(n !== el._n){
+      if(el._n >= 0 && n > el._n) keyTick(el._text.charAt(n-1));
+      el._n = n; paint(el, n);
+    }
   });
   if(active.size) requestAnimationFrame(loop); else loopOn = false;
 }
 function startTyping(el, delay){
   el._t0 = performance.now() + delay;
-  el._dur = Math.max(600, Math.min(3200, el._text.length * 22));
+  el._dur = Math.max(500, Math.min(4200, el._text.length * 26));
   el._n = -1; el._done = false;
   active.add(el);
   if(!loopOn){ loopOn = true; requestAnimationFrame(loop); }
 }
-function setText(el, text, delay){
-  active.delete(el);
-  el._text = text;
-  if(REDUCE || el.closest('.desc')){ el.textContent = text; el._done = true; return; }
+function build(el){
   el.textContent = '';
   el._a = document.createElement('span'); el._f = document.createElement('span'); el._r = document.createElement('span');
   el._f.className = 'tf'; el._r.className = 'tr';
   el.append(el._a, el._f, el._r);
   paint(el, 0);
+}
+function retype(el){ if(!el || el._text === undefined || REDUCE) return; active.delete(el); build(el); startTyping(el, 60); }
+function setText(el, text, delay){
+  active.delete(el);
+  el._text = text;
+  if(REDUCE || el.closest('.desc')){ el.textContent = text; el._done = true; return; }
+  build(el);
   if(el._vis) startTyping(el, delay);
 }
 
@@ -742,11 +778,7 @@ document.addEventListener('pointermove', e=>{
   });
 },{passive:true});
 
-/* refraction (SVG backdrop-filter) only in Chromium on fine pointers: phones skip it for speed */
-try{
-  const ua = navigator.userAgent, chromium = /Chrome\/|Chromium\//.test(ua) && !/Firefox\//.test(ua);
-  if(chromium && matchMedia('(hover:hover) and (pointer:fine)').matches && innerWidth >= 900) document.documentElement.classList.add('refract');
-}catch(e){}
+/* SVG refraction removed: too heavy */
 
 /* liquid ripple on press */
 document.addEventListener('pointerdown',e=>{
@@ -785,102 +817,130 @@ document.getElementById('discord').addEventListener('click', e=>{
   });
 })();
 
-/* ---- night / day toggle (night is default) ---- */
-document.getElementById('theme').addEventListener('click',()=>{
-  const light=document.documentElement.getAttribute('data-theme')!=='light';
-  if(light) document.documentElement.setAttribute('data-theme','light'); else document.documentElement.removeAttribute('data-theme');
-  try{localStorage.setItem('theme',light?'light':'dark')}catch(e){}
-  if(window.__matrixTheme) window.__matrixTheme(light);
-  const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content=light?'#fff3ee':'#0c050a';
+/* ---- night / day toggle with circular reveal (night is default) ---- */
+function setTheme(light,x,y){
+  const apply=()=>{
+    if(light) document.documentElement.setAttribute('data-theme','light'); else document.documentElement.removeAttribute('data-theme');
+    try{localStorage.setItem('theme',light?'light':'dark')}catch(e){}
+    if(window.__matrixTheme) window.__matrixTheme(light);
+    const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content=light?'#fff3ee':'#0c050a';
+  };
+  if(!document.startViewTransition || REDUCE){ apply(); return; }
+  const t=document.startViewTransition(apply);
+  t.ready.then(()=>{
+    const r=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y));
+    document.documentElement.animate({clipPath:['circle(0px at '+x+'px '+y+'px)','circle('+r+'px at '+x+'px '+y+'px)']},
+      {duration:700,easing:'cubic-bezier(.4,0,.2,1)',pseudoElement:'::view-transition-new(root)'});
+  }).catch(()=>{});
+}
+const themeBtn=document.getElementById('theme'), sndBtn=document.getElementById('snd');
+function pop(b){ b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
+themeBtn.addEventListener('click',e=>{
+  const r=themeBtn.getBoundingClientRect(); pop(themeBtn);
+  setTheme(document.documentElement.getAttribute('data-theme')!=='light', r.left+r.width/2, r.top+r.height/2);
 });
 
-/* ---- creamy keyboard "thock" on About + Devices clicks ---- */
-const KB=(function(){
-  let ac=null,out=null,nb=null;
-  function init(){
-    if(ac) return true;
-    const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return false;
-    ac=new AC(); out=ac.createGain(); out.gain.value=.55;
-    const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3200; lp.Q.value=.6;
-    out.connect(lp); lp.connect(ac.destination);
-    nb=ac.createBuffer(1,ac.sampleRate*.05,ac.sampleRate);
-    const d=nb.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
-    return true;
-  }
-  function thock(t,big){
-    const k=.92+Math.random()*.16, g=ac.createGain(); g.connect(out);
-    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(big?1:.8,t+.003); g.gain.exponentialRampToValueAtTime(.001,t+.11);
-    const o=ac.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(230*k,t); o.frequency.exponentialRampToValueAtTime(95*k,t+.09); o.connect(g); o.start(t); o.stop(t+.13);
-    const o2=ac.createOscillator(), g2=ac.createGain(); o2.type='triangle'; o2.frequency.setValueAtTime(520*k,t); o2.frequency.exponentialRampToValueAtTime(260*k,t+.05);
-    g2.gain.setValueAtTime(.16,t); g2.gain.exponentialRampToValueAtTime(.001,t+.05); o2.connect(g2); g2.connect(out); o2.start(t); o2.stop(t+.06);
-    const n=ac.createBufferSource(); n.buffer=nb; const bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1500*k; bp.Q.value=.9;
-    const g3=ac.createGain(); g3.gain.value=.28; n.connect(bp); bp.connect(g3); g3.connect(out); n.start(t);
-  }
-  return function(){
-    try{
-      if(!init()) return; if(ac.state==='suspended') ac.resume();
-      const n=3+Math.floor(Math.random()*3); let t=ac.currentTime+.005;
-      for(let i=0;i<n;i++){ thock(t,i===n-1); t+=.07+Math.random()*.07; }
-    }catch(e){}
-  };
-})();
-document.querySelectorAll('.about, .item.dev').forEach(el=>el.addEventListener('click',KB));
-document.querySelectorAll('.item.dev').forEach(el=>el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' ') KB(); }));
+/* ---- creamy keyboard sounds (synthesised, no files) ---- */
+let SND = !document.documentElement.classList.contains('snd-off');
+let ac=null,out=null,nbuf=null,lastTick=0;
+function audioInit(){
+  if(ac) return true;
+  const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return false;
+  ac=new AC(); out=ac.createGain(); out.gain.value=.6;
+  const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=4200; lp.Q.value=.5;
+  out.connect(lp); lp.connect(ac.destination);
+  nbuf=ac.createBuffer(1,Math.floor(ac.sampleRate*.04),ac.sampleRate);
+  const d=nbuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2.5);
+  return true;
+}
+['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>{ try{ if(audioInit()&&ac.state==='suspended') ac.resume(); }catch(e){} },{passive:true}));
+/* kind: 0 letter, 1 space, 2 enter; v: velocity */
+function keyAt(t,kind,v){
+  const k=.9+Math.random()*.2, f=(kind===1?125:kind===2?150:190+Math.random()*50)*k;
+  const g=ac.createGain(); g.connect(out);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.7*v,t+.002); g.gain.exponentialRampToValueAtTime(.001,t+(kind?.13:.09));
+  const o=ac.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(f*1.6,t); o.frequency.exponentialRampToValueAtTime(f*.55,t+.07); o.connect(g); o.start(t); o.stop(t+.15);
+  const n=ac.createBufferSource(); n.buffer=nbuf; const bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=(kind?1400:2100)*k; bp.Q.value=1.1;
+  const gn=ac.createGain(); gn.gain.value=.3*v; n.connect(bp); bp.connect(gn); gn.connect(out); n.start(t);
+  /* key release: tiny soft tick */
+  const n2=ac.createBufferSource(); n2.buffer=nbuf; const hp=ac.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=1800;
+  const g2=ac.createGain(); g2.gain.value=.07*v; n2.connect(hp); hp.connect(g2); g2.connect(out); n2.start(t+.06+Math.random()*.02);
+}
+function keyTick(ch){
+  if(!SND||!ac||ac.state!=='running') return;
+  const now=performance.now(); if(now-lastTick<28) return; lastTick=now;
+  if(ch===' '||ch==='\n'||/[.!?,]/.test(ch)||Math.random()>.1) keyAt(ac.currentTime+.001,ch===' '?1:ch==='\n'?2:0,.55+Math.random()*.45);
+}
+function keyBurst(){
+  if(!SND) return;
+  try{
+    if(!audioInit()) return; if(ac.state==='suspended') ac.resume();
+    const n=7+Math.floor(Math.random()*5); let t=ac.currentTime+.005;
+    for(let i=0;i<n;i++){ keyAt(t,(i===3||i===n-2)?1:(i===n-1?2:0),.5+Math.random()*.5); t+=.05+Math.random()*.1+(i%4===3?.08:0); }
+  }catch(e){}
+}
+sndBtn.addEventListener('click',()=>{
+  SND=!SND; document.documentElement.classList.toggle('snd-off',!SND); pop(sndBtn);
+  try{localStorage.setItem('snd',SND?'on':'off')}catch(e){}
+  if(SND) keyBurst();
+});
+document.querySelectorAll('.item.dev').forEach(el=>{
+  el.addEventListener('click',keyBurst);
+  el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' ') keyBurst(); });
+});
+const aboutSec=document.querySelector('.about');
+if(aboutSec) aboutSec.addEventListener('click',()=>{ retype(aboutSec.querySelector('p')); });
 
-/* ============ MATRIX: purple code rain ============
-   One canvas, fully cleared each frame, glyphs batched by colour bucket (5 fillStyle swaps per frame).
-   Phones: 14px cells, DPR 1, 30 fps. Pauses when the tab is hidden. Reduced motion: single still frame. */
+/* ============ MATRIX: pink code rain ============
+   Glyphs are pre-rendered into an atlas and blitted with drawImage (much cheaper than fillText). 30 fps cap. */
 (function(){
   const c=document.getElementById('matrix'); if(!c) return;
   const ctx=c.getContext('2d',{alpha:true});
   const small = innerWidth<700 || matchMedia('(pointer:coarse)').matches;
   const G='ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789<>/{}[]=+*$#:.woin201'.split('');
-  const DARK={C:['rgba(255,160,219,.95)','rgba(255,118,205,.8)','rgba(244,88,188,.6)','rgba(214,64,160,.4)','rgba(176,46,130,.22)'],H:'rgba(255,230,245,.98)',G:'rgba(255,150,215,.55)'};
-  const LIGHT={C:['rgba(122,12,82,.9)','rgba(168,26,114,.75)','rgba(205,52,146,.55)','rgba(226,92,172,.38)','rgba(236,132,192,.22)'],H:'rgba(86,0,58,.95)',G:'rgba(255,90,180,.4)'};
-  let COLORS=DARK.C, HEAD=DARK.H, HEADGLOW=DARK.G;
-  window.__matrixTheme=function(light){const t=light?LIGHT:DARK;COLORS=t.C;HEAD=t.H;HEADGLOW=t.G;};
-  window.__matrixTheme(document.documentElement.getAttribute('data-theme')==='light');
-  const minDt = small ? 33 : 16;
-  let w=0,h=0,fs=16,cw=13,rows=0,cols=[],cells=[],last=0,running=false;
+  const DARK=['rgba(255,160,219,.95)','rgba(255,118,205,.8)','rgba(244,88,188,.6)','rgba(214,64,160,.4)','rgba(176,46,130,.22)','rgba(255,150,215,.55)','rgba(255,230,245,.98)'];
+  const LIGHT=['rgba(122,12,82,.9)','rgba(168,26,114,.75)','rgba(205,52,146,.55)','rgba(226,92,172,.38)','rgba(236,132,192,.22)','rgba(255,90,180,.4)','rgba(86,0,58,.95)'];
+  let STY=document.documentElement.getAttribute('data-theme')==='light'?LIGHT:DARK;
+  const minDt=33;
+  let w=0,h=0,fs=16,cw=13,rows=0,cols=[],cells=[],last=0,running=false,atlas=null,dpr=1,cwp=0,fsp=0,dw=0,dh=0;
+
+  function buildAtlas(){
+    cwp=Math.ceil(cw*dpr)+2; fsp=Math.ceil(fs*dpr)+2; dw=cwp/dpr; dh=fsp/dpr;
+    atlas=document.createElement('canvas'); atlas.width=cwp*G.length; atlas.height=fsp*7;
+    const a=atlas.getContext('2d'); a.font=(fs*dpr)+'px "Courier New",ui-monospace,monospace'; a.textAlign='center'; a.textBaseline='top';
+    for(let r=0;r<7;r++){ a.fillStyle=STY[r]; for(let g=0;g<G.length;g++) a.fillText(G[g],g*cwp+cwp/2,r*fsp+1); }
+  }
+  window.__matrixTheme=function(light){ STY=light?LIGHT:DARK; if(atlas) buildAtlas(); if(REDUCE) draw(); };
 
   function resize(){
-    const dpr=Math.min(window.devicePixelRatio||1, small?1:1.5);
+    dpr=Math.min(window.devicePixelRatio||1, small?1:1.5);
     w=innerWidth; h=innerHeight;
     c.width=Math.round(w*dpr); c.height=Math.round(h*dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
-    fs = small ? 14 : 16; cw = fs*.82;
+    fs = small ? 15 : 16; cw = fs*(small?.95:.85);       /* fewer columns = fewer blits */
     rows = Math.ceil(h/fs)+30;
-    ctx.font=fs+'px "Courier New",ui-monospace,monospace';
-    ctx.textAlign='center'; ctx.textBaseline='top';
     const n=Math.ceil(w/cw);
     cols=[]; cells=[];
     for(let i=0;i<n;i++){
-      const T=10+Math.floor(Math.random()*(small?14:18));
-      cols.push({y:-20+Math.random()*(h/fs+20), v:(small?6:7)+Math.random()*(small?11:14), T});
+      cols.push({y:-20+Math.random()*(h/fs+20), v:(small?6:7)+Math.random()*(small?11:14), T:10+Math.floor(Math.random()*(small?12:16))});
       const a=new Uint8Array(rows); for(let r=0;r<rows;r++) a[r]=Math.random()*G.length|0;
       cells.push(a);
     }
+    buildAtlas();
     if(REDUCE) draw();
   }
+  function blit(g,b,x,y){ ctx.drawImage(atlas,g*cwp,b*fsp,cwp,fsp,x,y-.5,dw,dh); }
   function draw(){
     ctx.clearRect(0,0,w,h);
     const n=cols.length;
-    for(let b=0;b<5;b++){
-      ctx.fillStyle=COLORS[b];
-      for(let i=0;i<n;i++){
-        const col=cols[i], head=Math.floor(col.y), T=col.T, x=i*cw+cw/2, a=cells[i];
-        const k0=1+Math.ceil(b*T/5), k1=Math.min(T, Math.ceil((b+1)*T/5));
-        for(let k=k0;k<=k1;k++){
-          const r=head-k; if(r<0||r*fs>h) continue;
-          ctx.fillText(G[a[r%rows]], x, r*fs);
-        }
+    for(let i=0;i<n;i++){
+      const col=cols[i], head=Math.floor(col.y), T=col.T, x=i*cw+cw/2-dw/2, a=cells[i];
+      for(let k=1;k<=T;k++){
+        const r=head-k; if(r<0||r*fs>h) continue;
+        blit(a[r%rows], Math.min(4,Math.floor((k-1)*5/T)), x, r*fs);
       }
+      if(head>=0 && head*fs<=h){ const g=a[head%rows]; blit(g,5,x,head*fs); blit(g,6,x,head*fs); }
     }
-    // heads: soft halo + bright glyph
-    ctx.fillStyle=HEADGLOW;
-    for(let i=0;i<n;i++){ const r=Math.floor(cols[i].y); if(r<0||r*fs>h) continue; ctx.fillText(G[cells[i][r%rows]], i*cw+cw/2, r*fs+0); }
-    ctx.fillStyle=HEAD;
-    for(let i=0;i<n;i++){ const r=Math.floor(cols[i].y); if(r<0||r*fs>h) continue; ctx.fillText(G[cells[i][r%rows]], i*cw+cw/2, r*fs); }
   }
   function tick(t){
     if(document.hidden){ running=false; return; }
@@ -889,16 +949,15 @@ document.querySelectorAll('.item.dev').forEach(el=>el.addEventListener('keydown'
     const k=Math.min(dt,60)/1000, n=cols.length;
     for(let i=0;i<n;i++){
       const col=cols[i]; col.y+=col.v*k;
-      if(col.y-col.T>h/fs){ col.y=-Math.random()*20; col.v=(small?6:7)+Math.random()*(small?11:14); col.T=10+Math.floor(Math.random()*(small?14:18)); }
+      if(col.y-col.T>h/fs){ col.y=-Math.random()*20; col.v=(small?6:7)+Math.random()*(small?11:14); col.T=10+Math.floor(Math.random()*(small?12:16)); }
     }
-    // glyph flicker: a few random cells mutate each frame
-    for(let m=0;m<(small?6:14);m++){ const i=Math.random()*n|0; cells[i][Math.random()*rows|0]=Math.random()*G.length|0; }
+    for(let m=0;m<(small?5:10);m++){ const i=Math.random()*n|0; cells[i][Math.random()*rows|0]=Math.random()*G.length|0; }
     draw();
   }
   function start(){ if(!running && !REDUCE){ running=true; last=performance.now(); requestAnimationFrame(tick); } }
-  document.addEventListener('visibilitychange',()=>{ document.documentElement.classList.toggle('paused',document.hidden); if(!document.hidden) start(); });
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) start(); });
   let rt,lw=innerWidth;
-  addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>{ if(small && innerWidth===lw) return; lw=innerWidth; resize(); },180); }); /* phones: ignore URL-bar height jitter */
+  addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>{ if(small && innerWidth===lw) return; lw=innerWidth; resize(); },180); });
   resize(); start();
 })();
 
