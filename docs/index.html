@@ -283,7 +283,7 @@ h1{animation:shine 9s ease-in-out 3,h1In 1.4s cubic-bezier(.2,.8,.2,1) both}
 .tf{position:relative;opacity:.55}
 .tf::after{content:"";position:absolute;right:-3px;top:.12em;bottom:.12em;width:2px;border-radius:2px;background:var(--pink-soft);box-shadow:0 0 8px var(--pink),0 0 16px var(--pink)}
 .tf:empty::after{display:none}
-.reveal.vis{animation:secIn 1s cubic-bezier(.16,.84,.3,1) backwards}
+.reveal.vis{animation:secIn .8s cubic-bezier(.16,.84,.3,1) backwards}
 @keyframes secIn{from{opacity:0;transform:translateY(28px) scale(.985)}to{opacity:1;transform:none}}
 /* mobile */
 @media (max-width:520px){
@@ -478,7 +478,7 @@ html[data-theme="light"] .item.dev.open .chev,html[data-theme="light"] .chev{col
 .av-wrap::before{animation:none}
 h1{animation:h1In 1s cubic-bezier(.2,.8,.2,1) both}
 @keyframes h1In{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-@keyframes secIn{from{opacity:0}to{opacity:1}}
+@keyframes secIn{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
 @media (max-width:700px),(pointer:coarse){
   .glass,.lang,.tgl,.thumb{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
   .glass{background:linear-gradient(135deg,rgba(56,20,43,.74),rgba(34,12,28,.66))}
@@ -490,11 +490,6 @@ h1{animation:h1In 1s cubic-bezier(.2,.8,.2,1) both}
 html[data-theme="light"] .tgl .ico{color:#b02a74}
 html[data-theme="light"] .tgl .ico svg{filter:none}
 @media (prefers-reduced-motion:reduce){.tgl,.tgl .ico,.tgl .rays{transition:none}}
-
-main{transition:opacity .19s ease,transform .19s ease}
-main.lang-out{opacity:0;transform:translateY(8px)}
-main.lang-in{animation:langIn .45s cubic-bezier(.16,.84,.3,1) both}
-@keyframes langIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 
 /* fallbacks */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
@@ -652,7 +647,42 @@ lang = 'en';
 const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* text is shown instantly (no typing animation) */
-function setText(el, text){ el._text = text; el.textContent = text; el._done = true; }
+const active = new Set();
+let loopOn = false;
+function paint(el, n){
+  const t = el._text, k = Math.max(0, n-4);
+  el._a.textContent = t.slice(0,k);
+  el._f.textContent = t.slice(k,n);
+  el._r.textContent = t.slice(n);
+}
+function loop(now){
+  active.forEach(el=>{
+    const p = (now - el._t0) / el._dur;
+    if(p < 0) return;
+    if(p >= 1){ el.textContent = el._text; el._done = true; active.delete(el); return; }
+    const n = Math.floor(el._text.length * p);          /* constant speed, full text always laid out: nothing jumps */
+    if(n !== el._n){ el._n = n; paint(el, n); }
+  });
+  if(active.size) requestAnimationFrame(loop); else loopOn = false;
+}
+function startTyping(el, delay){
+  el._t0 = performance.now() + delay;
+  el._dur = Math.max(500, Math.min(3600, el._text.length * 24));
+  el._n = -1; el._done = false;
+  active.add(el);
+  if(!loopOn){ loopOn = true; requestAnimationFrame(loop); }
+}
+function setText(el, text, delay){
+  active.delete(el);
+  el._text = text;
+  if(REDUCE || el.closest('.desc')){ el.textContent = text; el._done = true; return; }
+  el.textContent = '';
+  el._a = document.createElement('span'); el._f = document.createElement('span'); el._r = document.createElement('span');
+  el._f.className = 'tf'; el._r.className = 'tr';
+  el.append(el._a, el._f, el._r);
+  paint(el, 0);
+  if(el._vis) startTyping(el, delay);
+}
 
 /* start typing the first time an element enters the viewport */
 const io = 'IntersectionObserver' in window ? new IntersectionObserver(es=>{
@@ -663,7 +693,25 @@ const io = 'IntersectionObserver' in window ? new IntersectionObserver(es=>{
     el._vis = true; el.classList.add('vis');
   });
 },{threshold:.2,rootMargin:'0px 0px -6% 0px'}) : null;
-function watch(el){ el._vis = true; el.classList.add('vis'); }
+/* reveal: robust scroll check (no IntersectionObserver), so nothing stays hidden in in-app browsers */
+const watched = new Set(); let revealK = 0;
+function reveal(el){
+  watched.delete(el); el._vis = true; el.classList.add('vis');
+  if(el._text !== undefined && !el._done && !el.closest('.desc') && !REDUCE)
+    startTyping(el, 650 + (el._d||0) + (el._d ? 0 : (revealK++)*110));
+}
+function checkReveal(){
+  revealK = 0;
+  watched.forEach(el=>{ const r = el.getBoundingClientRect(); if(r.top < innerHeight*0.68 && r.bottom > 0) reveal(el); });
+}
+function watch(el){
+  if(REDUCE){ el._vis = true; el.classList.add('vis'); return; }
+  if(!el._w){ el._w = 1; watched.add(el); }
+}
+let _rq=0; const sched=()=>{ if(_rq) return; _rq=requestAnimationFrame(()=>{ _rq=0; checkReveal(); }); };
+addEventListener('scroll',sched,{passive:true}); addEventListener('resize',sched);
+addEventListener('load',sched); document.addEventListener('DOMContentLoaded',sched);
+let _chk=0; const _iv=setInterval(()=>{ checkReveal(); if(++_chk>12) clearInterval(_iv); },250);
 
 let first = true;
 function apply(l){
@@ -690,12 +738,6 @@ document.querySelectorAll('.reveal').forEach(sec=>{
 /* pause hero's endless animations when it is off screen */
 if(io){ new IntersectionObserver(es=>document.body.classList.toggle('hero-off',!es[0].isIntersecting)).observe(document.querySelector('.hero')); }
 apply(lang);
-function swapLang(l){
-  if(REDUCE){ apply(l); return; }
-  const m=document.querySelector('main'); if(!m) { apply(l); return; }
-  m.classList.remove('lang-in'); m.classList.add('lang-out');
-  setTimeout(()=>{ apply(l); m.classList.remove('lang-out'); void m.offsetWidth; m.classList.add('lang-in'); setTimeout(()=>m.classList.remove('lang-in'),500); },190);
-}
 
 /* swipe / drag / click on the language switch */
 (function(){
@@ -717,10 +759,10 @@ function swapLang(l){
     sw.classList.remove('drag'); sw.style.removeProperty('--p');
     handled=true; setTimeout(()=>handled=false,50);
     const target = wasDrag ? (p>.5?'en':'ru') : (lang==='ru'?'en':'ru');
-    if(target!==lang) swapLang(target);
+    if(target!==lang) apply(target);
   }
   sw.addEventListener('pointerup',end); sw.addEventListener('pointercancel',end);
-  sw.addEventListener('click',()=>{ if(handled) return; swapLang(lang==='ru'?'en':'ru'); });
+  sw.addEventListener('click',()=>{ if(handled) return; apply(lang==='ru'?'en':'ru'); });
 })();
 
 /* device cards: tap to expand on touch (hover works on desktop) */
