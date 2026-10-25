@@ -264,6 +264,7 @@ header.top{position:sticky;top:12px;z-index:10;padding:7px 8px 7px 22px;border-r
 /* ---- performance pass 2 ---- */
 .avatar{animation:none!important;box-shadow:0 0 0 6px rgba(255,255,255,.06),0 0 50px rgba(255,123,202,.45)}
 .av-wrap{isolation:isolate}
+@media (hover:none),(pointer:coarse){.av-wrap{transform:none!important}}
 .av-wrap::before{content:"";position:absolute;inset:-34px;border-radius:50%;z-index:-1;pointer-events:none;
   background:radial-gradient(circle,rgba(255,123,202,.6),rgba(255,123,210,.25) 50%,transparent 68%);animation:glow 5s ease-in-out infinite}
 @keyframes glow{50%{opacity:.55;transform:scale(1.14)}}
@@ -675,6 +676,7 @@ document.getElementById('y').textContent = new Date().getFullYear();
 let pe=null, raf=0;
 const av=document.querySelector('.av-wrap');
 document.addEventListener('pointermove', e=>{
+  if(e.pointerType && e.pointerType!=='mouse') return; /* touch scroll must not tilt the avatar */
   pe=e; if(raf) return;
   raf=requestAnimationFrame(()=>{
     raf=0; const e=pe;
