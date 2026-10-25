@@ -675,7 +675,7 @@ function startTyping(el, delay){
 function setText(el, text, delay){
   active.delete(el);
   el._text = text;
-  if(REDUCE || el.closest('.desc')){ el.textContent = text; el._done = true; return; }
+  if(REDUCE || !el.closest('.about')){ el.textContent = text; el._done = true; return; }   /* typing only in "About me" */
   el.textContent = '';
   el._a = document.createElement('span'); el._f = document.createElement('span'); el._r = document.createElement('span');
   el._f.className = 'tf'; el._r.className = 'tr';
