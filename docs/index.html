@@ -410,35 +410,28 @@ footer{font-weight:600}
 @media (max-width:700px),(pointer:coarse){.glass{-webkit-backdrop-filter:blur(16px) saturate(125%);backdrop-filter:blur(16px) saturate(125%)}}
 
 
-/* ---- night/day switch: monochrome pink pill ---- */
+/* ---- night/day: one round pink button ---- */
 .ctl{display:flex;align-items:center;gap:10px}
-.tgl{--w:30px;--h:30px;position:relative;display:inline-flex;padding:3px;border-radius:999px;border:0;cursor:pointer;color:inherit;font:inherit;
+.tgl{--s:48px;position:relative;width:var(--s);height:var(--s);padding:0;border-radius:50%;border:0;cursor:pointer;color:inherit;font:inherit;display:grid;place-items:center;
   -webkit-user-select:none;user-select:none;outline-offset:3px;
   background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.04));
   -webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 2px 8px rgba(0,0,0,.45),0 10px 30px rgba(0,0,0,.45)}
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 2px 8px rgba(0,0,0,.45),0 10px 30px rgba(0,0,0,.45);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+.tgl:hover{transform:scale(1.07)}.tgl:active{transform:scale(.9)}
 .tgl:focus-visible{outline:2px solid var(--pink)}
-.tgl .knob{position:absolute;top:3px;left:3px;width:var(--w);height:var(--h);border-radius:999px;pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.08) 55%,rgba(255,96,197,.2));
-  box-shadow:inset 1px 1px 1px rgba(255,255,255,.5),inset -1px -2px 5px rgba(255,96,197,.3),0 4px 14px rgba(220,70,168,.35),0 0 0 1px rgba(255,255,255,.16);
-  transition:transform .6s cubic-bezier(.34,1.5,.5,1),width .25s ease}
-.tgl[aria-checked="true"] .knob{transform:translateX(var(--w))}
-.tgl:active .knob{width:calc(var(--w) + 10px)}
-.tgl[aria-checked="true"]:active .knob{transform:translateX(calc(var(--w) - 10px))}
-.tgl .ico{position:relative;z-index:2;width:var(--w);height:var(--h);display:grid;place-items:center;color:var(--pink-soft);opacity:.7;transition:color .35s,opacity .35s}
-.tgl .ico svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
-  transition:transform .7s cubic-bezier(.34,1.5,.5,1)}
-.tgl .sun svg{transform:rotate(-90deg) scale(.7)}
-.tgl .moon svg{transform:none}
-.tgl[aria-checked="false"] .moon,.tgl[aria-checked="true"] .sun{color:#fff;opacity:1}
-.tgl[aria-checked="true"] .sun svg{transform:rotate(0) scale(1)}
-.tgl[aria-checked="true"] .moon svg{transform:rotate(60deg) scale(.7)}
-.tgl .sun svg .rays{transform-origin:12px 12px;transition:transform .8s cubic-bezier(.34,1.5,.5,1)}
-.tgl[aria-checked="true"] .sun svg .rays{transform:rotate(90deg)}
+.tgl .ico{position:absolute;inset:0;display:grid;place-items:center;color:var(--pink-soft);
+  transition:transform .75s cubic-bezier(.34,1.45,.5,1),opacity .4s ease}
+.tgl .ico svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(255,123,202,.55))}
+.tgl .sun{transform:rotate(-120deg) scale(.2);opacity:0}
+.tgl[aria-checked="true"] .sun{transform:none;opacity:1}
+.tgl[aria-checked="true"] .moon{transform:rotate(120deg) scale(.2);opacity:0}
+.tgl .rays{transform-origin:12px 12px;transition:transform .9s cubic-bezier(.34,1.45,.5,1)}
+.tgl[aria-checked="true"] .rays{transform:rotate(90deg)}
 .tgl.pulse::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;animation:pulse2 .8s ease-out}
-@keyframes pulse2{from{box-shadow:0 0 0 0 rgba(255,123,202,.65)}to{box-shadow:0 0 0 18px rgba(255,123,202,0)}}
+@keyframes pulse2{from{box-shadow:0 0 0 0 rgba(255,123,202,.65)}to{box-shadow:0 0 0 16px rgba(255,123,202,0)}}
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.6s;animation-timing-function:cubic-bezier(.4,0,.2,1);mix-blend-mode:normal}
-@media (max-width:700px){.tgl{--w:28px;--h:28px}.ctl{gap:8px}}
+@media (max-width:700px){.tgl{--s:44px}.ctl{gap:8px}}
 
 /* ---- DAY theme (cream & pink) ---- */
 html[data-theme="light"]{--bg:#fff3ee;--text:#3a1230;--muted:rgba(58,18,48,.68);--pink-soft:#c2347f;color-scheme:light}
@@ -487,18 +480,21 @@ h1{animation:h1In 1s cubic-bezier(.2,.8,.2,1) both}
 @keyframes h1In{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes secIn{from{opacity:0}to{opacity:1}}
 @media (max-width:700px),(pointer:coarse){
-  .glass,.lang,.tgl,.thumb,.knob{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .glass,.lang,.tgl,.thumb{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
   .glass{background:linear-gradient(135deg,rgba(56,20,43,.74),rgba(34,12,28,.66))}
   .item.glass,.chip.glass{background:linear-gradient(135deg,rgba(70,26,54,.62),rgba(44,16,36,.56))}
   html[data-theme="light"] .glass{background:linear-gradient(135deg,rgba(255,255,255,.88),rgba(255,236,246,.8))}
   html[data-theme="light"] .item.glass,html[data-theme="light"] .chip.glass{background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(255,230,243,.84))}
 }
 
-html[data-theme="light"] .tgl .knob{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,214,235,.75));
-  box-shadow:inset 1px 1px 1px #fff,0 4px 12px rgba(214,60,150,.35),0 0 0 1px rgba(214,60,150,.25)}
-html[data-theme="light"] .tgl .ico{color:#c2347f}
-html[data-theme="light"] .tgl[aria-checked="false"] .moon,html[data-theme="light"] .tgl[aria-checked="true"] .sun{color:#7a1550}
-@media (prefers-reduced-motion:reduce){.tgl .knob,.tgl .ico svg{transition:none}}
+html[data-theme="light"] .tgl .ico{color:#b02a74}
+html[data-theme="light"] .tgl .ico svg{filter:none}
+@media (prefers-reduced-motion:reduce){.tgl,.tgl .ico,.tgl .rays{transition:none}}
+
+main{transition:opacity .19s ease,transform .19s ease}
+main.lang-out{opacity:0;transform:translateY(8px)}
+main.lang-in{animation:langIn .45s cubic-bezier(.16,.84,.3,1) both}
+@keyframes langIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
 
 /* fallbacks */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
@@ -511,7 +507,6 @@ html[data-theme="light"] .tgl[aria-checked="false"] .moon,html[data-theme="light
 </style>
 </head>
 <body>
-<script>try{if(localStorage.getItem("theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
 <canvas id="matrix" aria-hidden="true"></canvas>
 <div class="vignette"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -544,7 +539,6 @@ html[data-theme="light"] .tgl[aria-checked="false"] .moon,html[data-theme="light
     <div class="brand">BIO</div>
     <div class="ctl">
       <button class="tgl" id="theme" type="button" role="switch" aria-checked="false" aria-label="Night / Day" title="Night / Day">
-        <span class="knob"></span>
         <span class="ico moon"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span>
         <span class="ico sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><g class="rays"><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg></span>
       </button>
@@ -653,7 +647,7 @@ const T = {
 
 const sw = document.getElementById('lang');
 let lang = 'ru';
-try{ lang = localStorage.getItem('langPick') === 'en' ? 'en' : 'ru'; }catch(e){}
+lang = 'en';
 
 const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -669,10 +663,7 @@ const io = 'IntersectionObserver' in window ? new IntersectionObserver(es=>{
     el._vis = true; el.classList.add('vis');
   });
 },{threshold:.2,rootMargin:'0px 0px -6% 0px'}) : null;
-function watch(el){
-  if(!io || REDUCE){ el._vis = true; el.classList.add('vis'); return; }
-  if(!el._w){ el._w = 1; io.observe(el); }
-}
+function watch(el){ el._vis = true; el.classList.add('vis'); }
 
 let first = true;
 function apply(l){
@@ -688,7 +679,7 @@ function apply(l){
   });
   document.querySelectorAll('[data-ph]').forEach(el=>{ el.placeholder = T[l][el.dataset.ph]; });
   sw.setAttribute('aria-checked', l==='en' ? 'true' : 'false');
-  if(!first){ try{ localStorage.setItem('langPick', l); }catch(e){} }
+  
   first = false;
 }
 /* sections + staggered cards */
@@ -699,6 +690,12 @@ document.querySelectorAll('.reveal').forEach(sec=>{
 /* pause hero's endless animations when it is off screen */
 if(io){ new IntersectionObserver(es=>document.body.classList.toggle('hero-off',!es[0].isIntersecting)).observe(document.querySelector('.hero')); }
 apply(lang);
+function swapLang(l){
+  if(REDUCE){ apply(l); return; }
+  const m=document.querySelector('main'); if(!m) { apply(l); return; }
+  m.classList.remove('lang-in'); m.classList.add('lang-out');
+  setTimeout(()=>{ apply(l); m.classList.remove('lang-out'); void m.offsetWidth; m.classList.add('lang-in'); setTimeout(()=>m.classList.remove('lang-in'),500); },190);
+}
 
 /* swipe / drag / click on the language switch */
 (function(){
@@ -720,10 +717,10 @@ apply(lang);
     sw.classList.remove('drag'); sw.style.removeProperty('--p');
     handled=true; setTimeout(()=>handled=false,50);
     const target = wasDrag ? (p>.5?'en':'ru') : (lang==='ru'?'en':'ru');
-    if(target!==lang) apply(target);
+    if(target!==lang) swapLang(target);
   }
   sw.addEventListener('pointerup',end); sw.addEventListener('pointercancel',end);
-  sw.addEventListener('click',()=>{ if(handled) return; apply(lang==='ru'?'en':'ru'); });
+  sw.addEventListener('click',()=>{ if(handled) return; swapLang(lang==='ru'?'en':'ru'); });
 })();
 
 /* device cards: tap to expand on touch (hover works on desktop) */
@@ -795,7 +792,6 @@ function setTheme(light,x,y){
   const apply=()=>{
     if(light) document.documentElement.setAttribute('data-theme','light'); else document.documentElement.removeAttribute('data-theme');
     themeBtn.setAttribute('aria-checked',light?'true':'false');
-    try{localStorage.setItem('theme',light?'light':'dark')}catch(e){}
     if(window.__matrixTheme) window.__matrixTheme(light);
     const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content=light?'#fff3ee':'#0c050a';
   };
