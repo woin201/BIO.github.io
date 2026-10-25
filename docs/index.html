@@ -139,7 +139,7 @@ footer{text-align:center;color:var(--muted);font-size:.9rem;margin-top:34px}
 .reveal:not(.vis){opacity:0;transform:translateY(28px)}
 .reveal:not(.vis) .item,.reveal:not(.vis) .chip{opacity:0}
 .reveal.vis .item{animation:itemIn .9s calc(var(--i,0)*80ms + 250ms) cubic-bezier(.16,.84,.3,1) backwards}
-.reveal.vis .chip{animation:itemIn .9s calc(var(--i,0)*80ms + 600ms) cubic-bezier(.16,.84,.3,1) backwards,bob 5s ease-in-out infinite}
+.reveal.vis .chip{animation:itemIn .9s calc(var(--i,0)*70ms + 60ms) cubic-bezier(.16,.84,.3,1) backwards,bob 5s ease-in-out infinite}
 @keyframes itemIn{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
 
 
@@ -473,7 +473,7 @@ html[data-theme="light"] .item.dev.open .chev,html[data-theme="light"] .chev{col
 /* ---- smooth & light: perf pass 3 ---- */
 .glass{-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .chip,.reveal.vis .chip{animation:none}
-.reveal.vis .chip{animation:itemIn .9s calc(var(--i,0)*80ms + 600ms) cubic-bezier(.16,.84,.3,1) backwards}
+.reveal.vis .chip{animation:itemIn .9s calc(var(--i,0)*70ms + 60ms) cubic-bezier(.16,.84,.3,1) backwards}
 .ring{filter:none;will-change:transform}
 .av-wrap::before{animation:none}
 h1{animation:h1In 1s cubic-bezier(.2,.8,.2,1) both}
