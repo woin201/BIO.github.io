@@ -410,28 +410,36 @@ footer{font-weight:600}
 @media (max-width:700px),(pointer:coarse){.glass{-webkit-backdrop-filter:blur(16px) saturate(125%);backdrop-filter:blur(16px) saturate(125%)}}
 
 
-/* ---- theme toggle button ---- */
+/* ---- night/day switch: monochrome pink pill ---- */
 .ctl{display:flex;align-items:center;gap:10px}
-.theme{width:48px;height:48px;border-radius:50%;border:0;cursor:pointer;color:inherit;font:inherit;font-size:1.3rem;display:grid;place-items:center;
+.tgl{--w:40px;--h:40px;position:relative;display:inline-flex;padding:4px;border-radius:999px;border:0;cursor:pointer;color:inherit;font:inherit;
+  -webkit-user-select:none;user-select:none;outline-offset:3px;
   background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.04));
   -webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 2px 8px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.4);
-  transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
-.theme:hover{transform:scale(1.07) rotate(-10deg)}.theme:active{transform:scale(.92)}
-.theme:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
-.theme{position:relative;overflow:hidden}
-.theme .moon,.theme .sun,.theme .on,.theme .off{position:absolute;inset:0;display:grid;place-items:center;transition:transform .6s cubic-bezier(.34,1.56,.64,1),opacity .35s}
-.theme .sun{transform:rotate(-140deg) scale(.2);opacity:0}
-html[data-theme="light"] .theme .sun{transform:none;opacity:1}
-html[data-theme="light"] .theme .moon{transform:rotate(140deg) scale(.2);opacity:0}
-.theme .off{transform:scale(.2) rotate(-60deg);opacity:0}
-html.snd-off .theme .on{transform:scale(.2) rotate(60deg);opacity:0}
-html.snd-off .theme .off{transform:none;opacity:1}
-.theme.pop{animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
-@keyframes pop{40%{transform:scale(.78) rotate(-14deg)}100%{transform:none}}
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 2px 8px rgba(0,0,0,.45),0 10px 30px rgba(0,0,0,.45)}
+.tgl:focus-visible{outline:2px solid var(--pink)}
+.tgl .knob{position:absolute;top:4px;left:4px;width:var(--w);height:var(--h);border-radius:999px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.08) 55%,rgba(255,96,197,.2));
+  box-shadow:inset 1px 1px 1px rgba(255,255,255,.5),inset -1px -2px 5px rgba(255,96,197,.3),0 4px 14px rgba(220,70,168,.35),0 0 0 1px rgba(255,255,255,.16);
+  transition:transform .6s cubic-bezier(.34,1.5,.5,1),width .25s ease}
+.tgl[aria-checked="true"] .knob{transform:translateX(var(--w))}
+.tgl:active .knob{width:calc(var(--w) + 10px)}
+.tgl[aria-checked="true"]:active .knob{transform:translateX(calc(var(--w) - 10px))}
+.tgl .ico{position:relative;z-index:2;width:var(--w);height:var(--h);display:grid;place-items:center;color:var(--pink-soft);opacity:.7;transition:color .35s,opacity .35s}
+.tgl .ico svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+  transition:transform .7s cubic-bezier(.34,1.5,.5,1)}
+.tgl .sun svg{transform:rotate(-90deg) scale(.7)}
+.tgl .moon svg{transform:none}
+.tgl[aria-checked="false"] .moon,.tgl[aria-checked="true"] .sun{color:#fff;opacity:1}
+.tgl[aria-checked="true"] .sun svg{transform:rotate(0) scale(1)}
+.tgl[aria-checked="true"] .moon svg{transform:rotate(60deg) scale(.7)}
+.tgl .sun svg .rays{transform-origin:12px 12px;transition:transform .8s cubic-bezier(.34,1.5,.5,1)}
+.tgl[aria-checked="true"] .sun svg .rays{transform:rotate(90deg)}
+.tgl.pulse::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;animation:pulse2 .8s ease-out}
+@keyframes pulse2{from{box-shadow:0 0 0 0 rgba(255,123,202,.65)}to{box-shadow:0 0 0 18px rgba(255,123,202,0)}}
 ::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
 ::view-transition-old(root){z-index:1}::view-transition-new(root){z-index:2}
-@media (max-width:700px){.theme{width:44px;height:44px;font-size:1.15rem}.ctl{gap:8px}}
+@media (max-width:700px){.tgl{--w:36px;--h:36px}.ctl{gap:8px}}
 
 /* ---- DAY theme (cream & pink) ---- */
 html[data-theme="light"]{--bg:#fff3ee;--text:#3a1230;--muted:rgba(58,18,48,.68);--pink-soft:#c2347f;color-scheme:light}
@@ -456,7 +464,7 @@ html[data-theme="light"] h1{background:linear-gradient(100deg,#7a1550 20%,#d6368
   -webkit-background-clip:text;background-clip:text;-webkit-text-stroke:0;filter:drop-shadow(0 4px 14px rgba(214,60,150,.25))}
 html[data-theme="light"] .about p,html[data-theme="light"] .desc>p,html[data-theme="light"] .chip{color:rgba(58,18,48,.88)}
 html[data-theme="light"] .em.brand{color:#8a1858}
-html[data-theme="light"] .lang,html[data-theme="light"] .theme{background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,236,246,.55));
+html[data-theme="light"] .lang,html[data-theme="light"] .tgl{background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,236,246,.55));
   box-shadow:inset 0 0 0 1px rgba(214,60,150,.22),inset 0 2px 6px rgba(190,40,125,.12),0 10px 24px -10px rgba(190,40,125,.4)}
 html[data-theme="light"] .lang[aria-checked="false"] .opt.ru,html[data-theme="light"] .lang[aria-checked="true"] .opt.en{color:#7a1550;text-shadow:none}
 html[data-theme="light"] .thumb{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,214,235,.75));
@@ -480,12 +488,18 @@ h1{animation:h1In 1s cubic-bezier(.2,.8,.2,1) both}
 @keyframes h1In{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes secIn{from{opacity:0}to{opacity:1}}
 @media (max-width:700px),(pointer:coarse){
-  .glass,.lang,.theme,.thumb{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .glass,.lang,.tgl,.thumb,.knob{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
   .glass{background:linear-gradient(135deg,rgba(56,20,43,.74),rgba(34,12,28,.66))}
   .item.glass,.chip.glass{background:linear-gradient(135deg,rgba(70,26,54,.62),rgba(44,16,36,.56))}
   html[data-theme="light"] .glass{background:linear-gradient(135deg,rgba(255,255,255,.88),rgba(255,236,246,.8))}
   html[data-theme="light"] .item.glass,html[data-theme="light"] .chip.glass{background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(255,230,243,.84))}
 }
+
+html[data-theme="light"] .tgl .knob{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,214,235,.75));
+  box-shadow:inset 1px 1px 1px #fff,0 4px 12px rgba(214,60,150,.35),0 0 0 1px rgba(214,60,150,.25)}
+html[data-theme="light"] .tgl .ico{color:#c2347f}
+html[data-theme="light"] .tgl[aria-checked="false"] .moon,html[data-theme="light"] .tgl[aria-checked="true"] .sun{color:#7a1550}
+@media (prefers-reduced-motion:reduce){.tgl .knob,.tgl .ico svg{transition:none}}
 
 /* fallbacks */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
@@ -498,7 +512,7 @@ h1{animation:h1In 1s cubic-bezier(.2,.8,.2,1) both}
 </style>
 </head>
 <body>
-<script>try{if(localStorage.getItem("theme")==="light")document.documentElement.setAttribute("data-theme","light");if(localStorage.getItem("snd")==="off")document.documentElement.classList.add("snd-off")}catch(e){}</script>
+<script>try{if(localStorage.getItem("theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
 <canvas id="matrix" aria-hidden="true"></canvas>
 <div class="vignette"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -530,8 +544,11 @@ h1{animation:h1In 1s cubic-bezier(.2,.8,.2,1) both}
   <header class="top glass">
     <div class="brand">BIO</div>
     <div class="ctl">
-      <button class="theme" id="theme" type="button" aria-label="Night / Day" title="Night / Day"><span class="moon">🌙</span><span class="sun">☀️</span></button>
-      <button class="theme" id="snd" type="button" aria-label="Sound on/off" title="Sound"><span class="on">🔊</span><span class="off">🔇</span></button>
+      <button class="tgl" id="theme" type="button" role="switch" aria-checked="false" aria-label="Night / Day" title="Night / Day">
+        <span class="knob"></span>
+        <span class="ico moon"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span>
+        <span class="ico sun"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><g class="rays"><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg></span>
+      </button>
       <button class="lang" id="lang" role="switch" aria-checked="false" aria-label="Language / Язык">
         <span class="thumb"></span>
         <span class="opt ru">RU</span><span class="opt en">EN</span>
@@ -641,51 +658,8 @@ try{ lang = localStorage.getItem('lang') || ((navigator.language||'ru').toLowerC
 
 const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* ---------- smooth typewriter ----------
-   Full text is always laid out (the not-yet-typed part is transparent), so nothing jumps. */
-const active = new Set();
-let loopOn = false;
-function paint(el, n){
-  const t = el._text, k = Math.max(0, n-4);
-  el._a.textContent = t.slice(0,k);
-  el._f.textContent = t.slice(k,n);
-  el._r.textContent = t.slice(n);
-}
-function loop(now){
-  active.forEach(el=>{
-    const p = (now - el._t0) / el._dur;
-    if(p < 0) return;
-    if(p >= 1){ el.textContent = el._text; el._done = true; active.delete(el); return; }
-    const n = Math.floor(el._text.length * p);       /* constant speed: no running ahead */
-    if(n !== el._n){
-      if(el._n >= 0 && n > el._n) keyTick(el._text.charAt(n-1));
-      el._n = n; paint(el, n);
-    }
-  });
-  if(active.size) requestAnimationFrame(loop); else loopOn = false;
-}
-function startTyping(el, delay){
-  el._t0 = performance.now() + delay;
-  el._dur = Math.max(500, Math.min(4200, el._text.length * 26));
-  el._n = -1; el._done = false;
-  active.add(el);
-  if(!loopOn){ loopOn = true; requestAnimationFrame(loop); }
-}
-function build(el){
-  el.textContent = '';
-  el._a = document.createElement('span'); el._f = document.createElement('span'); el._r = document.createElement('span');
-  el._f.className = 'tf'; el._r.className = 'tr';
-  el.append(el._a, el._f, el._r);
-  paint(el, 0);
-}
-function retype(el){ if(!el || el._text === undefined || REDUCE) return; active.delete(el); build(el); startTyping(el, 60); }
-function setText(el, text, delay){
-  active.delete(el);
-  el._text = text;
-  if(REDUCE || el.closest('.desc')){ el.textContent = text; el._done = true; return; }
-  build(el);
-  if(el._vis) startTyping(el, delay);
-}
+/* text is shown instantly (no typing animation) */
+function setText(el, text){ el._text = text; el.textContent = text; el._done = true; }
 
 /* start typing the first time an element enters the viewport */
 const io = 'IntersectionObserver' in window ? new IntersectionObserver(es=>{
@@ -694,7 +668,6 @@ const io = 'IntersectionObserver' in window ? new IntersectionObserver(es=>{
     if(!e.isIntersecting) return;
     const el = e.target; io.unobserve(el);
     el._vis = true; el.classList.add('vis');
-    if(el._text !== undefined && !el._done && !el.closest('.desc') && !REDUCE) startTyping(el, (el._d||0) + (el._d ? 0 : 200 + (k++)*110));
   });
 },{threshold:.2,rootMargin:'0px 0px -6% 0px'}) : null;
 function watch(el){
@@ -817,10 +790,12 @@ document.getElementById('discord').addEventListener('click', e=>{
   });
 })();
 
-/* ---- night / day toggle with circular reveal (night is default) ---- */
+/* ---- night / day switch: circular reveal from the switch (night is default) ---- */
+const themeBtn=document.getElementById('theme');
 function setTheme(light,x,y){
   const apply=()=>{
     if(light) document.documentElement.setAttribute('data-theme','light'); else document.documentElement.removeAttribute('data-theme');
+    themeBtn.setAttribute('aria-checked',light?'true':'false');
     try{localStorage.setItem('theme',light?'light':'dark')}catch(e){}
     if(window.__matrixTheme) window.__matrixTheme(light);
     const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content=light?'#fff3ee':'#0c050a';
@@ -828,68 +803,19 @@ function setTheme(light,x,y){
   if(!document.startViewTransition || REDUCE){ apply(); return; }
   const t=document.startViewTransition(apply);
   t.ready.then(()=>{
-    const r=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y));
+    const r=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y)), ease='cubic-bezier(.65,0,.25,1)';
     document.documentElement.animate({clipPath:['circle(0px at '+x+'px '+y+'px)','circle('+r+'px at '+x+'px '+y+'px)']},
-      {duration:700,easing:'cubic-bezier(.4,0,.2,1)',pseudoElement:'::view-transition-new(root)'});
+      {duration:850,easing:ease,pseudoElement:'::view-transition-new(root)'});
+    document.documentElement.animate({opacity:[1,.55],transform:['scale(1)','scale(.985)']},
+      {duration:850,easing:ease,fill:'forwards',pseudoElement:'::view-transition-old(root)'});
   }).catch(()=>{});
 }
-const themeBtn=document.getElementById('theme'), sndBtn=document.getElementById('snd');
-function pop(b){ b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop'); }
-themeBtn.addEventListener('click',e=>{
-  const r=themeBtn.getBoundingClientRect(); pop(themeBtn);
+themeBtn.setAttribute('aria-checked',document.documentElement.getAttribute('data-theme')==='light'?'true':'false');
+themeBtn.addEventListener('click',()=>{
+  const r=themeBtn.getBoundingClientRect();
+  themeBtn.classList.remove('pulse'); void themeBtn.offsetWidth; themeBtn.classList.add('pulse');
   setTheme(document.documentElement.getAttribute('data-theme')!=='light', r.left+r.width/2, r.top+r.height/2);
 });
-
-/* ---- creamy keyboard sounds (synthesised, no files) ---- */
-let SND = !document.documentElement.classList.contains('snd-off');
-let ac=null,out=null,nbuf=null,lastTick=0;
-function audioInit(){
-  if(ac) return true;
-  const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return false;
-  ac=new AC(); out=ac.createGain(); out.gain.value=.6;
-  const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=4200; lp.Q.value=.5;
-  out.connect(lp); lp.connect(ac.destination);
-  nbuf=ac.createBuffer(1,Math.floor(ac.sampleRate*.04),ac.sampleRate);
-  const d=nbuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2.5);
-  return true;
-}
-['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>{ try{ if(audioInit()&&ac.state==='suspended') ac.resume(); }catch(e){} },{passive:true}));
-/* kind: 0 letter, 1 space, 2 enter; v: velocity */
-function keyAt(t,kind,v){
-  const k=.9+Math.random()*.2, f=(kind===1?125:kind===2?150:190+Math.random()*50)*k;
-  const g=ac.createGain(); g.connect(out);
-  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.7*v,t+.002); g.gain.exponentialRampToValueAtTime(.001,t+(kind?.13:.09));
-  const o=ac.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(f*1.6,t); o.frequency.exponentialRampToValueAtTime(f*.55,t+.07); o.connect(g); o.start(t); o.stop(t+.15);
-  const n=ac.createBufferSource(); n.buffer=nbuf; const bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=(kind?1400:2100)*k; bp.Q.value=1.1;
-  const gn=ac.createGain(); gn.gain.value=.3*v; n.connect(bp); bp.connect(gn); gn.connect(out); n.start(t);
-  /* key release: tiny soft tick */
-  const n2=ac.createBufferSource(); n2.buffer=nbuf; const hp=ac.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=1800;
-  const g2=ac.createGain(); g2.gain.value=.07*v; n2.connect(hp); hp.connect(g2); g2.connect(out); n2.start(t+.06+Math.random()*.02);
-}
-function keyTick(ch){
-  if(!SND||!ac||ac.state!=='running') return;
-  const now=performance.now(); if(now-lastTick<28) return; lastTick=now;
-  if(ch===' '||ch==='\n'||/[.!?,]/.test(ch)||Math.random()>.1) keyAt(ac.currentTime+.001,ch===' '?1:ch==='\n'?2:0,.55+Math.random()*.45);
-}
-function keyBurst(){
-  if(!SND) return;
-  try{
-    if(!audioInit()) return; if(ac.state==='suspended') ac.resume();
-    const n=7+Math.floor(Math.random()*5); let t=ac.currentTime+.005;
-    for(let i=0;i<n;i++){ keyAt(t,(i===3||i===n-2)?1:(i===n-1?2:0),.5+Math.random()*.5); t+=.05+Math.random()*.1+(i%4===3?.08:0); }
-  }catch(e){}
-}
-sndBtn.addEventListener('click',()=>{
-  SND=!SND; document.documentElement.classList.toggle('snd-off',!SND); pop(sndBtn);
-  try{localStorage.setItem('snd',SND?'on':'off')}catch(e){}
-  if(SND) keyBurst();
-});
-document.querySelectorAll('.item.dev').forEach(el=>{
-  el.addEventListener('click',keyBurst);
-  el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' ') keyBurst(); });
-});
-const aboutSec=document.querySelector('.about');
-if(aboutSec) aboutSec.addEventListener('click',()=>{ retype(aboutSec.querySelector('p')); });
 
 /* ============ MATRIX: pink code rain ============
    Glyphs are pre-rendered into an atlas and blitted with drawImage (much cheaper than fillText). 30 fps cap. */
