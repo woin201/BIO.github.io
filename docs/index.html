@@ -299,6 +299,12 @@ h1{animation:shine 9s ease-in-out 3,h1In 1.4s cubic-bezier(.2,.8,.2,1) both}
 body{background:#05030a}
 .vignette{background:radial-gradient(ellipse at 50% 45%,transparent 35%,rgba(4,2,9,.72) 100%),
   linear-gradient(180deg,rgba(7,5,12,.35),transparent 18%,transparent 82%,rgba(7,5,12,.5))}
+/* subtle grid cells */
+.vignette{background:radial-gradient(ellipse at 50% 45%,transparent 35%,rgba(4,2,9,.72) 100%),
+  linear-gradient(180deg,rgba(7,5,12,.35),transparent 18%,transparent 82%,rgba(7,5,12,.5)),
+  linear-gradient(rgba(176,110,255,.07) 1px,transparent 1px) 0 0/44px 44px,
+  linear-gradient(90deg,rgba(176,110,255,.07) 1px,transparent 1px) 0 0/44px 44px}
+@media (max-width:700px){.vignette{background-size:auto,auto,34px 34px,34px 34px}}
 
 .brand{text-shadow:0 0 14px rgba(190,110,255,.8)}
 
