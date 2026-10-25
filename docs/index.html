@@ -145,7 +145,7 @@ footer{text-align:center;color:var(--muted);font-size:.9rem;margin-top:34px}
 
 /* ---- extra beauty ---- */
 .av-wrap{position:relative;width:min(190px,48vw);margin:0 auto 22px;transform-style:preserve-3d;transition:transform .2s ease-out}
-.av-wrap .avatar{margin:0;width:100%}
+.av-wrap .avatar{margin:0;width:100%;height:auto;aspect-ratio:1/1}
 .ring{position:absolute;inset:-14px;border-radius:50%;pointer-events:none;
   background:conic-gradient(from 0deg,transparent 0 55%,rgba(255,184,223,.9) 75%,transparent 95%);
   -webkit-mask:radial-gradient(circle,transparent 66%,#000 67%);mask:radial-gradient(circle,transparent 66%,#000 67%);
@@ -409,6 +409,56 @@ footer{font-weight:600}
   box-shadow:inset 1px 1px 1px rgba(255,255,255,.5),inset -1px -2px 5px rgba(255,96,197,.3),0 4px 14px rgba(220,70,168,.35),0 0 0 1px rgba(255,255,255,.16)}
 @media (max-width:700px),(pointer:coarse){.glass{-webkit-backdrop-filter:blur(16px) saturate(125%);backdrop-filter:blur(16px) saturate(125%)}}
 
+
+/* ---- theme toggle button ---- */
+.ctl{display:flex;align-items:center;gap:10px}
+.theme{width:48px;height:48px;border-radius:50%;border:0;cursor:pointer;color:inherit;font:inherit;font-size:1.3rem;display:grid;place-items:center;
+  background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.04));
+  -webkit-backdrop-filter:blur(18px) saturate(150%);backdrop-filter:blur(18px) saturate(150%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 2px 8px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.4);
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.theme:hover{transform:scale(1.07) rotate(-10deg)}.theme:active{transform:scale(.92)}
+.theme:focus-visible{outline:2px solid var(--pink);outline-offset:3px}
+.theme .sun{display:none}
+html[data-theme="light"] .theme .sun{display:block}html[data-theme="light"] .theme .moon{display:none}
+@media (max-width:700px){.theme{width:44px;height:44px;font-size:1.15rem}.ctl{gap:8px}}
+
+/* ---- DAY theme (cream & pink) ---- */
+html[data-theme="light"]{--bg:#fff3ee;--text:#3a1230;--muted:rgba(58,18,48,.68);--pink-soft:#c2347f;color-scheme:light}
+html[data-theme="light"] body{background:#fff3ee}
+html[data-theme="light"] .vignette{background:radial-gradient(ellipse at 50% 45%,transparent 40%,rgba(255,196,224,.55) 100%),
+  linear-gradient(rgba(214,60,150,.10) 1px,transparent 1px) 0 0/44px 44px,
+  linear-gradient(90deg,rgba(214,60,150,.10) 1px,transparent 1px) 0 0/44px 44px}
+@media (max-width:700px){html[data-theme="light"] .vignette{background-size:auto,34px 34px,34px 34px}}
+html[data-theme="light"].refract header.top,html[data-theme="light"] .refract header.top{-webkit-backdrop-filter:blur(16px) saturate(130%);backdrop-filter:blur(16px) saturate(130%)}
+html[data-theme="light"] .refract .thumb{-webkit-backdrop-filter:none;backdrop-filter:none}
+html[data-theme="light"] .glass{
+  background:radial-gradient(130% 100% at 0% 0%,rgba(255,255,255,.7),transparent 55%),linear-gradient(135deg,rgba(255,255,255,.55),rgba(255,236,246,.42));
+  border:1px solid rgba(214,60,150,.2);
+  box-shadow:inset 1px 1px 0 rgba(255,255,255,.95),inset -1px -1px 0 rgba(235,100,175,.22),0 18px 40px -18px rgba(190,40,125,.38)}
+html[data-theme="light"] .item.glass,html[data-theme="light"] .chip.glass{
+  background:linear-gradient(135deg,rgba(255,255,255,.7),rgba(255,232,244,.5));
+  box-shadow:inset 1px 1px 0 rgba(255,255,255,.95),inset -1px -1px 0 rgba(235,100,175,.18),0 8px 18px -10px rgba(190,40,125,.35)}
+html[data-theme="light"] .glass::before{background:radial-gradient(260px circle at var(--mx,30%) var(--my,0%),rgba(255,255,255,.55),transparent 60%)}
+html[data-theme="light"] .glass:hover{border-color:rgba(214,60,150,.34)}
+html[data-theme="light"] .brand{color:#8a1858;text-shadow:none}
+html[data-theme="light"] h1{background:linear-gradient(100deg,#7a1550 20%,#d6368f 45%,#ff6fb8 60%,#7a1550 80%);background-size:250% 100%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-stroke:0;filter:drop-shadow(0 4px 14px rgba(214,60,150,.25))}
+html[data-theme="light"] .about p,html[data-theme="light"] .desc>p,html[data-theme="light"] .chip{color:rgba(58,18,48,.88)}
+html[data-theme="light"] .em.brand{color:#8a1858}
+html[data-theme="light"] .lang,html[data-theme="light"] .theme{background:linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,236,246,.55));
+  box-shadow:inset 0 0 0 1px rgba(214,60,150,.22),inset 0 2px 6px rgba(190,40,125,.12),0 10px 24px -10px rgba(190,40,125,.4)}
+html[data-theme="light"] .lang[aria-checked="false"] .opt.ru,html[data-theme="light"] .lang[aria-checked="true"] .opt.en{color:#7a1550;text-shadow:none}
+html[data-theme="light"] .thumb{background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,214,235,.75));
+  box-shadow:inset 1px 1px 1px #fff,0 4px 12px rgba(214,60,150,.35),0 0 0 1px rgba(214,60,150,.25)}
+html[data-theme="light"] .search input{background:rgba(255,255,255,.8);color:#3a1230;border-color:rgba(214,60,150,.3);box-shadow:inset 0 2px 6px rgba(190,40,125,.12)}
+html[data-theme="light"] .search input::placeholder{color:rgba(58,18,48,.45)}
+html[data-theme="light"] .search .go{color:#7a1550;border-color:rgba(214,60,150,.3);background:linear-gradient(180deg,#fff,rgba(255,150,205,.55))}
+html[data-theme="light"] .toast{color:#3a1230}
+html[data-theme="light"] .avatar{border-color:rgba(255,255,255,.9)}
+html[data-theme="light"] footer{text-shadow:none}
+html[data-theme="light"] .item.dev.open .chev,html[data-theme="light"] .chev{color:#7a1550}
+
 /* fallbacks */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
   .glass,.lang,.thumb{background:rgba(44,18,35,.85)}
@@ -420,6 +470,7 @@ footer{font-weight:600}
 </style>
 </head>
 <body>
+<script>try{if(localStorage.getItem("theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
 <canvas id="matrix" aria-hidden="true"></canvas>
 <div class="vignette"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -450,10 +501,13 @@ footer{font-weight:600}
 <div class="wrap">
   <header class="top glass">
     <div class="brand">BIO</div>
-    <button class="lang" id="lang" role="switch" aria-checked="false" aria-label="Language / Язык">
-      <span class="thumb"></span>
-      <span class="opt ru">RU</span><span class="opt en">EN</span>
-    </button>
+    <div class="ctl">
+      <button class="theme" id="theme" type="button" aria-label="Night / Day" title="Night / Day"><span class="moon">🌙</span><span class="sun">☀️</span></button>
+      <button class="lang" id="lang" role="switch" aria-checked="false" aria-label="Language / Язык">
+        <span class="thumb"></span>
+        <span class="opt ru">RU</span><span class="opt en">EN</span>
+      </button>
+    </div>
   </header>
 
   <main>
@@ -731,6 +785,48 @@ document.getElementById('discord').addEventListener('click', e=>{
   });
 })();
 
+/* ---- night / day toggle (night is default) ---- */
+document.getElementById('theme').addEventListener('click',()=>{
+  const light=document.documentElement.getAttribute('data-theme')!=='light';
+  if(light) document.documentElement.setAttribute('data-theme','light'); else document.documentElement.removeAttribute('data-theme');
+  try{localStorage.setItem('theme',light?'light':'dark')}catch(e){}
+  if(window.__matrixTheme) window.__matrixTheme(light);
+  const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content=light?'#fff3ee':'#0c050a';
+});
+
+/* ---- creamy keyboard "thock" on About + Devices clicks ---- */
+const KB=(function(){
+  let ac=null,out=null,nb=null;
+  function init(){
+    if(ac) return true;
+    const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return false;
+    ac=new AC(); out=ac.createGain(); out.gain.value=.55;
+    const lp=ac.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3200; lp.Q.value=.6;
+    out.connect(lp); lp.connect(ac.destination);
+    nb=ac.createBuffer(1,ac.sampleRate*.05,ac.sampleRate);
+    const d=nb.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
+    return true;
+  }
+  function thock(t,big){
+    const k=.92+Math.random()*.16, g=ac.createGain(); g.connect(out);
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(big?1:.8,t+.003); g.gain.exponentialRampToValueAtTime(.001,t+.11);
+    const o=ac.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(230*k,t); o.frequency.exponentialRampToValueAtTime(95*k,t+.09); o.connect(g); o.start(t); o.stop(t+.13);
+    const o2=ac.createOscillator(), g2=ac.createGain(); o2.type='triangle'; o2.frequency.setValueAtTime(520*k,t); o2.frequency.exponentialRampToValueAtTime(260*k,t+.05);
+    g2.gain.setValueAtTime(.16,t); g2.gain.exponentialRampToValueAtTime(.001,t+.05); o2.connect(g2); g2.connect(out); o2.start(t); o2.stop(t+.06);
+    const n=ac.createBufferSource(); n.buffer=nb; const bp=ac.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1500*k; bp.Q.value=.9;
+    const g3=ac.createGain(); g3.gain.value=.28; n.connect(bp); bp.connect(g3); g3.connect(out); n.start(t);
+  }
+  return function(){
+    try{
+      if(!init()) return; if(ac.state==='suspended') ac.resume();
+      const n=3+Math.floor(Math.random()*3); let t=ac.currentTime+.005;
+      for(let i=0;i<n;i++){ thock(t,i===n-1); t+=.07+Math.random()*.07; }
+    }catch(e){}
+  };
+})();
+document.querySelectorAll('.about, .item.dev').forEach(el=>el.addEventListener('click',KB));
+document.querySelectorAll('.item.dev').forEach(el=>el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' ') KB(); }));
+
 /* ============ MATRIX: purple code rain ============
    One canvas, fully cleared each frame, glyphs batched by colour bucket (5 fillStyle swaps per frame).
    Phones: 14px cells, DPR 1, 30 fps. Pauses when the tab is hidden. Reduced motion: single still frame. */
@@ -739,8 +835,11 @@ document.getElementById('discord').addEventListener('click', e=>{
   const ctx=c.getContext('2d',{alpha:true});
   const small = innerWidth<700 || matchMedia('(pointer:coarse)').matches;
   const G='ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789<>/{}[]=+*$#:.woin201'.split('');
-  const COLORS=['rgba(255,160,219,.95)','rgba(255,118,205,.8)','rgba(244,88,188,.6)','rgba(214,64,160,.4)','rgba(176,46,130,.22)'];
-  const HEAD='rgba(255,230,245,.98)', HEADGLOW='rgba(255,150,215,.55)';
+  const DARK={C:['rgba(255,160,219,.95)','rgba(255,118,205,.8)','rgba(244,88,188,.6)','rgba(214,64,160,.4)','rgba(176,46,130,.22)'],H:'rgba(255,230,245,.98)',G:'rgba(255,150,215,.55)'};
+  const LIGHT={C:['rgba(122,12,82,.9)','rgba(168,26,114,.75)','rgba(205,52,146,.55)','rgba(226,92,172,.38)','rgba(236,132,192,.22)'],H:'rgba(86,0,58,.95)',G:'rgba(255,90,180,.4)'};
+  let COLORS=DARK.C, HEAD=DARK.H, HEADGLOW=DARK.G;
+  window.__matrixTheme=function(light){const t=light?LIGHT:DARK;COLORS=t.C;HEAD=t.H;HEADGLOW=t.G;};
+  window.__matrixTheme(document.documentElement.getAttribute('data-theme')==='light');
   const minDt = small ? 33 : 16;
   let w=0,h=0,fs=16,cw=13,rows=0,cols=[],cells=[],last=0,running=false;
 
