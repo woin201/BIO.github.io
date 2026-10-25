@@ -280,7 +280,8 @@ h1{animation:shine 9s ease-in-out 3,h1In 1.4s cubic-bezier(.2,.8,.2,1) both}
 
 /* ---- typewriter ---- */
 .tr{color:transparent;-webkit-text-fill-color:transparent}
-.tf{position:relative;opacity:.55}
+.g1{opacity:.88}.g2{opacity:.68}
+.tf{position:relative;opacity:.42}
 .tf::after{content:"";position:absolute;right:-3px;top:.12em;bottom:.12em;width:2px;border-radius:2px;background:var(--pink-soft);box-shadow:0 0 8px var(--pink),0 0 16px var(--pink)}
 .tf:empty::after{display:none}
 .reveal.vis{animation:secIn .8s cubic-bezier(.16,.84,.3,1) backwards}
@@ -670,9 +671,12 @@ const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const active = new Set();
 let loopOn = false;
 function paint(el, n){
-  const t = el._text, k = Math.max(0, n-4);
-  el._a.textContent = t.slice(0,k);
-  el._f.textContent = t.slice(k,n);
+  /* soft front: the last 9 letters fade in gradually (3 steps), the rest is solid, the untyped part is transparent */
+  const t = el._text, a = Math.max(0,n-9), b = Math.max(0,n-6), c = Math.max(0,n-3);
+  el._a.textContent = t.slice(0,a);
+  el._g1.textContent = t.slice(a,b);
+  el._g2.textContent = t.slice(b,c);
+  el._f.textContent = t.slice(c,n);
   el._r.textContent = t.slice(n);
 }
 function loop(now){
@@ -687,7 +691,7 @@ function loop(now){
 }
 function startTyping(el, delay){
   el._t0 = performance.now() + delay;
-  el._dur = Math.max(500, Math.min(3600, el._text.length * 24));
+  el._dur = Math.max(500, Math.min(3600, el._text.length * 27));
   el._n = -1; el._done = false;
   active.add(el);
   if(!loopOn){ loopOn = true; requestAnimationFrame(loop); }
@@ -701,9 +705,10 @@ function setText(el, text, delay){
     return;
   }   /* typing only in "About me" */
   el.textContent = '';
-  el._a = document.createElement('span'); el._f = document.createElement('span'); el._r = document.createElement('span');
-  el._f.className = 'tf'; el._r.className = 'tr';
-  el.append(el._a, el._f, el._r);
+  el._a = document.createElement('span'); el._g1 = document.createElement('span'); el._g2 = document.createElement('span');
+  el._f = document.createElement('span'); el._r = document.createElement('span');
+  el._g1.className = 'g1'; el._g2.className = 'g2'; el._f.className = 'tf'; el._r.className = 'tr';
+  el.append(el._a, el._g1, el._g2, el._f, el._r);
   paint(el, 0);
   if(el._vis) startTyping(el, delay);
 }
