@@ -506,10 +506,7 @@ html[data-theme="light"] .tgl .ico svg{filter:none}
 .av-wrap::before{animation:glow 6s ease-in-out infinite}
 .sw{animation:swapIn .55s cubic-bezier(.16,.84,.3,1) both}
 @keyframes swapIn{from{opacity:0;filter:blur(4px)}to{opacity:1;filter:blur(0)}}
-#prog{position:fixed;left:0;top:0;height:3px;width:100%;z-index:60;pointer-events:none;transform-origin:left;transform:scaleX(0);
-  background:linear-gradient(90deg,#ff7bca,#ffb8df);box-shadow:0 0 10px rgba(255,123,202,.8)}
 html[data-theme="light"] .sheen{background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.7) 50%,transparent 60%)}
-html[data-theme="light"] #prog{background:linear-gradient(90deg,#d6368f,#ff7bca)}
 
 /* fallbacks */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
@@ -522,7 +519,6 @@ html[data-theme="light"] #prog{background:linear-gradient(90deg,#d6368f,#ff7bca)
 </style>
 </head>
 <body>
-<div id="prog" aria-hidden="true"></div>
 <canvas id="matrix" aria-hidden="true"></canvas>
 <div class="vignette"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -722,13 +718,9 @@ const io = 'IntersectionObserver' in window ? new IntersectionObserver(es=>{
     el._vis = true; el.classList.add('vis');
   });
 },{threshold:.2,rootMargin:'0px 0px -6% 0px'}) : null;
-/* sheen element + scroll progress bar */
+/* sheen element */
 document.querySelectorAll('.reveal').forEach(sec=>{ const i=document.createElement('i'); i.className='sheen'; sec.appendChild(i); });
-(function(){
-  const bar=document.getElementById('prog'); let q=0;
-  const upd=()=>{ q=0; const m=document.documentElement.scrollHeight-innerHeight; bar.style.transform='scaleX('+(m>0?Math.min(1,scrollY/m):0)+')'; };
-  addEventListener('scroll',()=>{ if(!q) q=requestAnimationFrame(upd); },{passive:true}); upd();
-})();
+
 /* reveal: robust scroll check (no IntersectionObserver), so nothing stays hidden in in-app browsers */
 const watched = new Set(); let revealK = 0;
 function reveal(el){
